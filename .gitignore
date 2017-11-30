@@ -1,2 +1,10 @@
+# IntelliJ
 .idea/*
-venv/
+
+# Python / virtual env
+venv
+env
+.python-version
+
+# Temp files directory
+w
