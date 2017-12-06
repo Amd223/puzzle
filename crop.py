@@ -1,6 +1,9 @@
 import os
 import cv2
 
+image = input("Input an image: \n")
+image = image + ".jpg"
+
 curr_dir   = os.path.dirname(os.path.realpath(__file__))
 target_dir = os.path.join(curr_dir, 'w')
 os.makedirs(target_dir, exist_ok=True)   # mkdir -p
@@ -8,7 +11,7 @@ os.makedirs(target_dir, exist_ok=True)   # mkdir -p
 width_blocks  = 486
 height_blocks = 486
 
-img = cv2.imread("adam.jpg")
+img = cv2.imread("images/"+image)
 height, width = img.shape[:2]
 
 # Iterate in the range(begin, end, step)
