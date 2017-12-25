@@ -4,7 +4,7 @@ import cv2
 image = input("Input an image: \n")
 image = image + ".jpg"
 
-curr_dir   = os.path.dirname(os.path.realpath(__file__))
+curr_dir = os.path.dirname(os.path.realpath(__file__))
 target_dir = os.path.join(curr_dir, 'w')
 os.makedirs(target_dir, exist_ok=True)   # mkdir -p
 
