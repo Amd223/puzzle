@@ -1,5 +1,6 @@
 import os
 import math
+import multiprocessing
 from collections import OrderedDict
 
 import cv2
@@ -13,7 +14,7 @@ METHODS_MIN = ['cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
 METHODS = METHODS_MAX + METHODS_MIN
 
 # Target location of template
-TARGET_LOC = (403, 379)
+TARGET_LOC = (430, 406)
 
 
 def safe_imread(img_name):
@@ -29,9 +30,8 @@ def compute_mse(results, target_loc, threshold=0.95):
     :return: str, name of method minimising the MSE
     """
     target_y, target_x = target_loc
-    mse = {}
-    for m, r in results.items():
 
+    def do_single_mse(m, r, mse):
         e = []
         it = np.nditer(r, flags=['multi_index'])
         while not it.finished:
@@ -42,10 +42,23 @@ def compute_mse(results, target_loc, threshold=0.95):
             it.iternext()
         mse[m] = sum(e) / len(e)
 
+    # Start multithreaded jobs
+    manager = multiprocessing.Manager()
+    mse = manager.dict()
+    jobs = []
+    for m, r in results.items():
+        p = multiprocessing.Process(target=do_single_mse, args=(m, r, mse))
+        jobs.append(p)
+        p.start()
+
+    # Wait for completion
+    for proc in jobs:
+        proc.join()
+
     # Sort by ascending error
     mse = OrderedDict(sorted(mse.items(), key=lambda x: x[1]))
     for m, e in mse.items():
-        print('Method {}: {}'.format(m, e))
+        print('Method {0: <20}: {1}'.format(m, e))
 
     return list(mse.items())[0][0]
 
@@ -63,7 +76,7 @@ def apply_methods(draw=True):
 
         # Top left corner
         match_loc = max_loc if m in METHODS_MAX else min_loc
-        print('[{}] match loc = {}'.format(m, match_loc))
+        print('[{0: <20}] match loc = {1}'.format(m, match_loc))
         bottom_right = (match_loc[0] + w, match_loc[1] + h)
 
         # draw box on template
