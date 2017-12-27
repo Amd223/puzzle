@@ -1,27 +1,27 @@
-import cv2
+import os
 import math
-import numpy as np
 from collections import OrderedDict
+
+import cv2
+import numpy as np
 from matplotlib import pyplot as plt
 
 
-img_name = input("Input an image name: \n")
-img = '{}.jpg'.format(img_name)
-template = '{}3.jpg'.format(img_name)
-target_loc = (468, 283)
-print('Using image src ' + img)
-print('Using image template ' + template)
-
-# Load images
-img = cv2.imread("images/" + img, 0)
-template = cv2.imread("images/" + template, 0)
-w, h = template.shape[::-1]
-
 # All the 6 methods for comparison in a list
-methods_max = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR', 'cv2.TM_CCORR_NORMED']
-methods_min = ['cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
-methods = methods_max + methods_min
+METHODS_MAX = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR', 'cv2.TM_CCORR_NORMED']
+METHODS_MIN = ['cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
+METHODS = METHODS_MAX + METHODS_MIN
 
+# Target location of template
+TARGET_LOC = (403, 379)
+
+
+def safe_imread(img_name):
+    img_path = os.path.join('images', img_name)
+    img = cv2.imread(img_path, 0)
+    if img is None:
+        raise ValueError("No image at '{}'".format(img_name))
+    return img
 
 def compute_mse(results, target_loc, threshold=0.95):
     """
@@ -53,7 +53,7 @@ def compute_mse(results, target_loc, threshold=0.95):
 def apply_methods(draw=True):
     results = {}
 
-    for m in methods:
+    for m in METHODS:
         # apply template matching by sliding template over original image
         # performs well as long as the template is a direct crop from the image
         res = cv2.matchTemplate(template, img, eval(m))
@@ -62,7 +62,7 @@ def apply_methods(draw=True):
         results[m] = res
 
         # Top left corner
-        match_loc = max_loc if m in methods_max else min_loc
+        match_loc = max_loc if m in METHODS_MAX else min_loc
         print('[{}] match loc = {}'.format(m, match_loc))
         bottom_right = (match_loc[0] + w, match_loc[1] + h)
 
@@ -77,9 +77,20 @@ def apply_methods(draw=True):
             plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
             plt.show()
 
-    best_method = compute_mse(results, target_loc)
+    best_method = compute_mse(results, TARGET_LOC)
     print('Best method is {}.'.format(best_method))
 
+
+img_name = input("Input an image name: \n")
+img      = '{}.jpg'.format(img_name)
+template = '{}3.jpg'.format(img_name)
+print('Using image src ' + img)
+print('Using image template ' + template)
+
+# Load images
+img      = safe_imread(img)
+template = safe_imread(template)
+w, h = template.shape[::-1]
 
 apply_methods(draw=False)
 
