@@ -1,7 +1,10 @@
 from pylab import *
 from PIL import Image
 
-pil_im = Image.open("adam.jpg")
+from puzzle.tools.utils import input_image
+
+img_path = input_image()
+pil_im = Image.open(img_path)
 # pil_im = Image.open("adam.jpg").convert("L")
 
 
@@ -14,7 +17,7 @@ pil_im.show()
 
 
 # plots an image and four points with red stars at the x and y coordinates
-im = array(pil_im)  # read image to array
+im = pil_im  # read image to array
 imshow(im)
 print("Please click 2 points")
 x = ginput(2)
@@ -31,7 +34,7 @@ axis('off')
 
 
 
-im_2 = array(Image.open('adam.jpg').convert('L'))
+im_2 = Image.open('adam.jpg').convert('L')
 figure()  # create a new figure
 gray()  # don’t use colors
 contour(im_2, origin='image')  # show contours with origin upper left corner
@@ -42,7 +45,7 @@ figure()
 hist(im_2.flatten(), 50)  # image is flattened because 1-dimensional array as input
 
 
-print("Please click 3 time")
+print("Please click 3 times")
 x = ginput(3)
 print("You clicked", x)
 show()
