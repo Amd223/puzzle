@@ -15,9 +15,6 @@ METHODS_MAX = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR', 'cv2.TM_
 METHODS_MIN = ['cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
 METHODS = METHODS_MAX + METHODS_MIN
 
-# Target location of template
-TARGET_LOC = (430, 406)
-
 
 def compute_mse(results, target_loc, threshold=0.95):
     """
@@ -37,7 +34,7 @@ def compute_mse(results, target_loc, threshold=0.95):
             it.iternext()
         mse[m] = sum(e) / len(e)
 
-    # Start multithreaded jobs
+    # Start multi-threaded jobs
     manager = multiprocessing.Manager()
     mse = manager.dict()
     jobs = []
@@ -111,5 +108,3 @@ test_methods(img, template, template_pos, draw=False)
 # kp = sift.detect(gray, None)
 # image = cv2.drawKeypoints(gray, kp, image)
 # cv2.imwrite('sift_keypoints.jpg', image)
-
-
