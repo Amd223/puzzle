@@ -7,6 +7,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from puzzle.tools.utils import input_image, img_read
+from puzzle.tools.crop import crop_interactive
 
 
 # All the 6 methods for comparison in a list
@@ -57,7 +58,9 @@ def compute_mse(results, target_loc, threshold=0.95):
     return list(mse.items())[0][0]
 
 
-def test_methods(img, template, draw=True):
+def test_methods(img, template, template_pos, draw=True):
+    print('[{0: <20}] templ loc = {1}'.format("", template_pos))
+
     results = {}
 
     for m in METHODS:
@@ -85,20 +88,20 @@ def test_methods(img, template, draw=True):
             plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
             plt.show()
 
-    best_method = compute_mse(results, TARGET_LOC)
+    best_method = compute_mse(results, template_pos)
     print('Best method is {}.'.format(best_method))
 
 
-img_name = input_image("Input an image name from '{}': \n")
-template_name = input_image("Input a template image name from '{}': \n")
-print('Using image src ' + img_name)
-print('Using image template ' + template_name)
+img_path = input_image("Input an image name from '{}': \n")
+print('Using image src : ' + img_path)
+
+template_path, template_pos = crop_interactive(img_path, show_crop=False)
 
 # Load images
-img = img_read(img_name)
-template = img_read(template_name)
+img = img_read(img_path)
+template = img_read(template_path)
 
-test_methods(img, template, draw=False)
+test_methods(img, template, template_pos, draw=False)
 
 
 # apply template matching using SIFT - xfeatures does not work
