@@ -11,13 +11,13 @@ def crop_one(img_path, crop_dim, crop_pos=(0, 0)):
     Extracts a crop from a given image
     :param img_path: str
         Path to the image to crop from
+    :param crop_dim: (int, int)
+        Dimensions (width, height) of the crop
     :param crop_pos: (int, int)
         Position of the top-left corner (x, y) of the crop
-    :param crop_dim: (int, int)
-        Dimensions (height, width) of the crop
     :return: str, path of the directory containing the cropped images.
     """
-    crop_height, crop_width = crop_dim
+    crop_width, crop_height = crop_dim
     crop_x, crop_y = crop_pos
 
     # Create temp dir of outputs
@@ -128,7 +128,7 @@ def crop_interactive(img_path=None, show_crop=True):
             # 'c' key: crop the region of interest
             elif key == ord("c") and len(ref_pt) == 2:
                 [(pt_a_x, pt_a_y), (pt_b_x, pt_b_y)] = ref_pt
-                top_left = (min(pt_a_x, pt_b_x), min(pt_a_y, pt_b_y))
+                top_left     = (min(pt_a_x, pt_b_x), min(pt_a_y, pt_b_y))
                 bottom_right = (max(pt_a_x, pt_b_x), max(pt_a_y, pt_b_y))
 
                 top_left_x, top_left_y = top_left

@@ -1,5 +1,6 @@
+import os
 import cv2
-from matplotlib import pyplot as plt
+from PIL import Image
 
 from puzzle.tools.utils import input_image, img_read
 from puzzle.tools.crop import crop_interactive
@@ -8,8 +9,8 @@ from puzzle.tools.crop import crop_interactive
 img_path = input_image("Input an image name from '{}': \n")
 print('Using image src : ' + img_path)
 
-# crop_path, _ = crop_interactive(img_path, show_crop=False)
-crop_path = input_image("Input a query image name from '{}': \n")
+crop_path, _ = crop_interactive(img_path)
+print('Using crop_path : ' + crop_path)
 
 # Load images
 img1 = img_read(crop_path) # queryImage
@@ -32,14 +33,10 @@ matches = bf.knnMatch(des1, des2, k=2)
 good = [[m] for m, n in matches if m.distance < 0.75*n.distance]
 
 # cv2.drawMatchesKnn expects list of lists as matches.
+img3_path = os.path.join(os.path.dirname(crop_path), 'sift_key_points.jpg')
 img3 = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good, None, flags=2)
+cv2.imwrite(img3_path, img3)
+print('img3', img3_path)
 
-plt.imshow(img3), plt.show()
 
-
-# apply template matching using SIFT - xfeatures does not work
-# gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-# sift = cv2.xfeatures2d.SIFT_create()
-# kp = sift.detect(gray, None)
-# image = cv2.drawKeypoints(gray, kp, image)
-# cv2.imwrite('sift_keypoints.jpg', image)
+Image.open(img3_path).show()
