@@ -99,12 +99,3 @@ img = img_read(img_path)
 template = img_read(template_path)
 
 test_methods(img, template, template_pos, draw=False)
-
-
-# apply template matching using SIFT - xfeatures does not work
-# image = cv2.imread("images/adam.jpg")
-# gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-# sift = cv2.xfeatures2d.SIFT_create()
-# kp = sift.detect(gray, None)
-# image = cv2.drawKeypoints(gray, kp, image)
-# cv2.imwrite('sift_keypoints.jpg', image)
