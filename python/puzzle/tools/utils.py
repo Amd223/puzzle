@@ -10,7 +10,7 @@ def img_read(img_path):
         Path to the image to load
     :return: file descriptor object
     """
-    img = cv2.imread(img_path, 0)
+    img = cv2.imread(img_path)
     if img is None:
         raise ValueError("No image at '{}'".format(img_path))
     return img
