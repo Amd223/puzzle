@@ -30,7 +30,7 @@ def compute_mse(results, target_loc, threshold=0.95):
             v = it[0]
             y, x = it.multi_index
             if v >= threshold:
-                e.append(math.sqrt((y-target_y)**2 + (x-target_x)**2))
+                e.append((y-target_y)**2 + (x-target_x)**2)
             it.iternext()
         mse[m] = sum(e) / len(e)
 
@@ -65,10 +65,10 @@ def test_methods(img, template, template_pos, draw=True):
         # performs well as long as the template is a direct crop from the image
         res = cv2.matchTemplate(template, img, eval(m))
         cv2.normalize(res, res, 0, 1, cv2.NORM_MINMAX)
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
         results[m] = res
 
         # Top left corner
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
         match_loc = max_loc if m in METHODS_MAX else min_loc
         print('[{0: <20}] match loc = {1}'.format(m, match_loc))
 
