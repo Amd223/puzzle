@@ -16,6 +16,25 @@ def img_read(img_path):
     return img
 
 
+def input_directory(msg=None, dir_root="../../../images"):
+    """
+    Prompts the user for an image in the default project images location
+    :param files_root: str
+        Relative path to the root of the project directory
+    :return: str
+        Absolute path to the input image
+    """
+    if msg is None:
+        msg = "Input directory from '{}': "
+
+    curr_dir = os.path.dirname(__file__)
+    path_prefix = os.path.realpath(os.path.join(curr_dir, dir_root))
+
+    # Prompt user
+    dir = input(msg.format(path_prefix))
+    return os.path.join(path_prefix, dir)
+
+
 def input_image(msg=None, images_relpath="../../../images"):
     """
     Prompts the user for an image in the default project images location
