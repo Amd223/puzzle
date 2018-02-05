@@ -7,6 +7,7 @@ from puzzle.tools.utils import input_image, img_read, input_directory
 rel_path         = '../../../images'
 rel_path_resized = '../../../images/resized'
 rel_path_merged  = '../../../images/merged'
+rel_path_merged_test  = '../../../images/merge_test'
 
 def mkpath(p):
     curr_dir = os.path.dirname(__file__)
@@ -46,7 +47,7 @@ def merge_loulou(dir_in, img1, img2):
 def merge(dir_in, img1, img2):
 
     # Create counter to renamed merged files
-    dir_out = os.path.realpath(os.path.join(dir_in, rel_path_merged))
+    dir_out = os.path.realpath(os.path.join(dir_in, rel_path_merged_test))
     n = len(os.listdir(dir_out))
 
     height, width = img1.shape[:2]
@@ -83,3 +84,4 @@ def merge_all(dir_in):
 if __name__ == "__main__":
     dir_in = input_directory()
     resized_dir = os.path.join(dir_in, "resized")
+    merge_all(resized_dir)
