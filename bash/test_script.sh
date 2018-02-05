@@ -12,4 +12,4 @@ echo "And now in`pwd`"
 
 python -m scripts.label_image \
     --graph=tf_files/retrained_graph.pb  \
-    --image=tf_files/flower_photos/daisy/daisy1.jpg
+    --image=tf_files/test_set/normal/city1.jpg

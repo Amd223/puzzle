@@ -64,7 +64,7 @@ def merge(dir_in, img1, img2):
 
     # Save
     m = n + 1
-    dir_out = mkpath(rel_path_merged)
+    dir_out = mkpath(rel_path_merged_test)
     os.makedirs(dir_out, exist_ok=True)
     crop_name = os.path.join(dir_out, str(m)+".jpg")
     cv2.imwrite(crop_name, img2)
