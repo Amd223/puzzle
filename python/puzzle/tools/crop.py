@@ -1,9 +1,16 @@
 import os
 import tempfile
 
+
 import cv2
 
 from puzzle.tools.utils import img_read, input_image
+
+rel_path         = '../../../images'
+rel_path_resized = '../../../images/resized'
+rel_path_merged  = '../../../images/merged'
+rel_path_merged_pieces  = '../../../pieces'
+
 
 
 def crop_one(img_path, crop_dim, crop_pos=(0, 0)):
@@ -52,17 +59,22 @@ def crop(img_path, block_dim):
     img = img_read(img_path)
     height, width = img.shape[:2]
 
+    dir_out = os.path.realpath(os.path.join(img_path, rel_path_merged_pieces))
+    n = len(os.listdir(dir_out))
+    print(n)
+
     # Iterate in the range(begin, end, step)
     for y in range(0, height, block_height):
         for x in range(0, width, block_width):
-            crop_name = os.path.join(tmp_dir, 'img_y-%d_x-%d.png' % (y, x))
+            n +=1
+            crop_name2 = os.path.join(dir_out, str(n) + ".jpg")
+            #crop_name = os.path.join(tmp_dir, 'img_y-%d_x-%d.png' % (y, x))
             crop_img  = img[y:y+block_height, x:x+block_width]
-            cv2.imwrite(crop_name, crop_img)
+            cv2.imwrite(crop_name2, crop_img)
 
-    return crop_img
+    return crop_name2
 
-
-def crop_all(img_path, block_dim):
+def crop_loulou(img_path, block_dim):
     """
     Crops an image into blocks of given width / height
     :param img_path: str
@@ -72,6 +84,7 @@ def crop_all(img_path, block_dim):
     :return: str
         Path of the directory containing the cropped images.
     """
+
     block_height, block_width = block_dim
 
     # Create temp dir of outputs
@@ -89,7 +102,6 @@ def crop_all(img_path, block_dim):
             cv2.imwrite(crop_name, crop_img)
 
     return tmp_dir
-
 
 def crop_interactive(img_path=None, show_crop=True):
     """
