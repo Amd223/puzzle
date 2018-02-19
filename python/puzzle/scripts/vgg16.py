@@ -190,7 +190,6 @@ def VGG16(include_top=False, weights='imagenet',
 
     return model
 
-
 def get_activations(model, model_inputs, print_shape_only=False, layer_name=None):
     print('----- activations -----')
     activations = []
@@ -261,11 +260,13 @@ def display_activations(activation_maps):
         plt.imshow(activations, interpolation='None', cmap='jet')
         plt.show()
 
-input = Input(shape=(224,224,3), name = "images/adam.jpg")
 
-model = VGG16(include_top=False, weights='imagenet',
-          input_tensor=input, input_shape=(224,224,3),
-          classes=2)
 
-activation = get_activations(model, input)
-display_activations(activation)
+
+if __name__ == "__main__":
+    input = Input(shape=(224, 224, 3), name="images/adam.jpg")
+
+    model = VGG16(include_top=False, weights='imagenet',
+                  input_tensor=input, input_shape=(224, 224, 3),
+                  classes=2)
+    print(model.outputs)
