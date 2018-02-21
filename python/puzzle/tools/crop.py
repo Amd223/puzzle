@@ -13,7 +13,7 @@ rel_path_merged_pieces  = '../../../pieces'
 
 
 
-def crop_one(img_path, crop_dim, crop_pos=(0, 0)):
+def crop_one(img_path, crop_dim, crop_pos=(0, 0), save=True):
     """
     Extracts a crop from a given image
     :param img_path: str
@@ -27,17 +27,19 @@ def crop_one(img_path, crop_dim, crop_pos=(0, 0)):
     crop_width, crop_height = crop_dim
     crop_x, crop_y = crop_pos
 
-    # Create temp dir of outputs
-    tmp_dir = tempfile.mkdtemp()
-
     # Load image
     img = img_read(img_path)
 
     crop_img = img[crop_y:crop_y+crop_height, crop_x:crop_x+crop_width]
+    if not save:
+        return crop_im
+
+    # Create temp dir of outputs
+    tmp_dir = tempfile.mkdtemp()
     _, img_extension = os.path.splitext(img_path)
     crop_name = os.path.join(tmp_dir, 'crop{}'.format(img_extension))
     cv2.imwrite(crop_name, crop_img)
-    
+
     return crop_name
 
 def crop(img_path, block_dim):
