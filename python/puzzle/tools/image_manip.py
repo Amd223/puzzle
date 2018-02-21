@@ -4,7 +4,7 @@ from PIL import Image
 from resizeimage import resizeimage
 
 
-def img_resize(img_path_in, img_path_out, size=512):
+def img_resize(img_path_in, img_path_out, size=224):
     with open(img_path_in, 'rb') as fd_img:
         img = Image.open(fd_img)
         img = resizeimage.resize_cover(img, [size, size])
