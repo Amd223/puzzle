@@ -8,8 +8,6 @@ from puzzle.tools.utils import input_directory, img_read
 import cv2
 
 
-
-
 def crop_one(img_path, crop_dim, crop_pos=(0, 0), save=True):
     """
     Extracts a crop from a given image
@@ -44,7 +42,7 @@ X_1 = []
 X_2 = []
 Y = []
 
-def select_crops(img_path, crop_dim=(16,16), list1 = X_1, list2 = X_2, class_list = Y):
+def select_correct_crops(img_path, crop_dim=(16,16), list1 = X_1, list2 = X_2, class_list = Y):
 
 
     x = randint(1, 13)
@@ -62,16 +60,44 @@ def select_crops(img_path, crop_dim=(16,16), list1 = X_1, list2 = X_2, class_lis
     X_2.append(crop2)
     Y.append(0) # 0 indicates the 2 pieces should be next to each other
 
-    return crop, crop2
+    return X_1, X_2, Y
+
+def select_incorrect_crops(img_path, crop_dim=(16,16), list1 = X_1, list2 = X_2, class_list = Y):
 
 
-if __name__ == "__main__":
+    x = randint(1, 13)
+    y = randint(1, 14)
+
+    crop_pos = (x, y)
+    print(crop_pos)
+    crop = crop_one(img_path, crop_dim, crop_pos, save=False)
+
+    new_crop_pos = (x+3, y+3)
+    print(new_crop_pos)
+    crop2 = crop_one(img_path, crop_dim, new_crop_pos, save=False)
+
+    X_1.append(crop)
+    X_2.append(crop2)
+    Y.append(1) # 0 indicates the 2 pieces should be next to each other
+
+    return X_1, X_2, Y
+
+def create_training_set():
     curr_dir = os.path.dirname(__file__)
     img_dir = os.path.realpath(os.path.join(curr_dir, '../../../images'))
 
     for image in glob.iglob(img_dir + '/**/*.jpg', recursive=True):
-        select_crops(image)
+        X_1, X_2, Y = select_correct_crops(image)
 
-    #cv2.imshow("img", select_crops(dir_in)[0])
-    #cv2.waitKey(0)
-    #cv2.destroyAllWindows()
+    return X_1, X_2, Y
+
+# if __name__ == "__main__":
+#     curr_dir = os.path.dirname(__file__)
+#     img_dir = os.path.realpath(os.path.join(curr_dir, '../../../images'))
+#
+#     for image in glob.iglob(img_dir + '/**/*.jpg', recursive=True):
+#         select_correct_crops(image)
+#
+#     #cv2.imshow("img", select_crops(dir_in)[0])
+#     #cv2.waitKey(0)
+#     #cv2.destroyAllWindows()
