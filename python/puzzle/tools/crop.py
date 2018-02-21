@@ -32,7 +32,7 @@ def crop_one(img_path, crop_dim, crop_pos=(0, 0), save=True):
 
     crop_img = img[crop_y:crop_y+crop_height, crop_x:crop_x+crop_width]
     if not save:
-        return crop_im
+        return crop_img
 
     # Create temp dir of outputs
     tmp_dir = tempfile.mkdtemp()
