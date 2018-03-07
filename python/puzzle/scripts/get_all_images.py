@@ -13,7 +13,7 @@ import tqdm
 import pickle
 
 
-def crop_one(img_path, crop_dim, crop_pos=(0, 0), save=True):
+def crop_one(img_path, crop_dim, crop_pos=(0, 0), save=False):
     """
     Extracts a crop from a given image
     :param img_path: str
@@ -61,14 +61,14 @@ def select_correct_crops(img_path, crop_dim=(48, 48)):
           Dimensions (width, height) of the crop
     """
 
-    for x in range(0, 528, 48*3):
-        for y in range(0, 528, 48*3):
+    for x in range(0, 528, 48*2):
+        for y in range(0, 528, 48*2):
             try:
                 crop_pos = (x, y)
-                crop = crop_one(img_path, crop_dim, crop_pos, save=True)
+                crop = crop_one(img_path, crop_dim, crop_pos, save=False)
 
                 new_crop_pos = (x + crop_dim[0], y)
-                crop2 = crop_one(img_path, crop_dim, new_crop_pos, save=True)
+                crop2 = crop_one(img_path, crop_dim, new_crop_pos, save=False)
 
                 yield crop, crop2, 0 #what does yield do?
 
@@ -84,17 +84,26 @@ def select_incorrect_crops(img_path, crop_dim=(48, 48)):
           :param crop_dim: (int, int)
               Dimensions (width, height) of the crop
           """
-    x = randint(1, 13)
-    y = randint(1, 13)
-    for x in range(0, 528, 48*3):  # why only 0-15?
-        for y in range(0, 528, 48*3):
+
+    for x in range(0, 528, 48*2):  # why only 0-15?
+        for y in range(0, 528, 48*2):
             try:
                 # if the crop is not a square, pass and don't put in dataset
                 crop_pos = (x, y)
-                crop = crop_one(img_path, crop_dim, crop_pos, save=True)
+                crop = crop_one(img_path, crop_dim, crop_pos, save=False)
 
-                new_crop_pos = (x + crop_dim[0]*3, y + crop_dim[1]*3)
-                crop2 = crop_one(img_path, crop_dim, new_crop_pos, save=True)
+                if (x,y) > (264,264):
+                    new_crop_pos = (x - crop_dim[0]*5, y - crop_dim[1]*5)
+                elif x > 264 & y < 264:
+                    new_crop_pos = (x - crop_dim[0]*5, y + crop_dim[1]*5)
+                elif x < 264 & y > 264:
+                    new_crop_pos = (x + crop_dim[0]*5, y - crop_dim[1]*5)
+                if (x,y) < (264,264):
+                    new_crop_pos = (x - crop_dim[0]*5, y - crop_dim[1]*5)
+
+
+                crop2 = crop_one(img_path, crop_dim, new_crop_pos, save=False)
+
                 yield crop, crop2, 1
             except ValueError:
                 pass
@@ -136,8 +145,8 @@ class FeatureExtraction:
         :param img_path:
         :return:
         """
-        img = image.load_img(img_path, target_size=(48, 48))
-        x = image.img_to_array(img)
+        #img = image.load_img(img_path, target_size=(48, 48))
+        x = image.img_to_array(img_path)
         x = np.expand_dims(x, axis=0)
         x = preprocess_input(x)
         return self.model.predict(x)

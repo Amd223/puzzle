@@ -1,5 +1,4 @@
 import pickle
-
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
@@ -18,7 +17,7 @@ with open(dataset_file_test, mode="rb") as fp:
 
 print(len(y_test))
 
-# X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, shuffle=True)
+#X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, shuffle=True)
 
 lregression = LogisticRegression()
 lregression.fit(X_train, y_train)
@@ -43,7 +42,13 @@ print(clf.score(X_test, y_test))
 rfc = RandomForestClassifier()
 rfc.fit(X_train, y_train)
 print(rfc.score(X_test, y_test))
+#y_score = rfc.fit(X_train, y_train).decision_function(X_test)
+#rfc.roc_curve(y_test,y_score )
 
 dataset_file = "rfc.pkl"
 with open(dataset_file, mode="wb") as fp:
     pickle.dump(rfc, fp)
+
+classifier = rfc
+classifier.fit(X_train, y_train)
+y_score = classifier.predict_proba(X_test)
