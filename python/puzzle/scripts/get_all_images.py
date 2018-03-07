@@ -2,9 +2,8 @@ import os
 import glob
 import tempfile
 from random import randint
-
-from puzzle.tools.crop import crop_loulou
-from puzzle.tools.utils import input_directory, img_read
+from PIL import Image
+from resizeimage import resizeimage
 import cv2
 from keras.applications.vgg16 import VGG16
 from keras.preprocessing import image
@@ -29,11 +28,16 @@ def crop_one(img_path, crop_dim, crop_pos=(0, 0), save=True):
     crop_x, crop_y = crop_pos
 
     # Load image
-    img = img_read(img_path)
+    #img = img_read(img_path)
+    img = Image.open(img_path)
+
+    img = resizeimage.resize_cover(img, [528, 528])
+    img = np.array(img)
 
     crop_img = img[crop_y:crop_y + crop_height, crop_x:crop_x + crop_width]
     if crop_img.shape[:2] != crop_dim:
-        raise ValueError("Image crop not square")
+
+        raise ValueError("Image crop not square, has dims:{}, at location:{}".format(crop_img.shape[:2], crop_pos))
 
     if not save:
         return crop_img
@@ -44,39 +48,46 @@ def crop_one(img_path, crop_dim, crop_pos=(0, 0), save=True):
     crop_name = os.path.join(tmp_dir, 'crop{}'.format(img_extension))
     cv2.imwrite(crop_name, crop_img)
 
-    return crop_name
+    return crop_name # how to find this tmp dir?
 
 
-X_1 = []
-X_2 = []
-Y = []
 
+def select_correct_crops(img_path, crop_dim=(48, 48)):
+    """
+      Extracts x amount of correct crop pairs from a given image
+      :param img_path: str
+          Path to the image to crop from
+      :param crop_dim: (int, int)
+          Dimensions (width, height) of the crop
+    """
 
-def select_correct_crops(img_path, crop_dim=(48, 48), list1=X_1, list2=X_2, class_list=Y):
-
-    #x = randint(1, 15)
-    #y = randint(1, 16)
-
-    for x in range(0, 15, 5):
-        for y in range(0, 16, 5):
+    for x in range(0, 528, 48*3):
+        for y in range(0, 528, 48*3):
             try:
                 crop_pos = (x, y)
                 crop = crop_one(img_path, crop_dim, crop_pos, save=True)
 
-                new_crop_pos = (x + crop_dim[0]*1, y)
+                new_crop_pos = (x + crop_dim[0], y)
                 crop2 = crop_one(img_path, crop_dim, new_crop_pos, save=True)
 
-                yield crop, crop2, 0
+                yield crop, crop2, 0 #what does yield do?
 
             except ValueError:
                 pass
 
 
-def select_incorrect_crops(img_path, crop_dim=(48, 48), list1=X_1, list2=X_2, class_list=Y):
+def select_incorrect_crops(img_path, crop_dim=(48, 48)):
+    """
+          Extracts x amount of incorrect crop pairs from a given image
+          :param img_path: str
+              Path to the image to crop from
+          :param crop_dim: (int, int)
+              Dimensions (width, height) of the crop
+          """
     x = randint(1, 13)
     y = randint(1, 13)
-    for x in range(0, 13, 5):
-        for y in range(0, 13, 5):
+    for x in range(0, 528, 48*3):  # why only 0-15?
+        for y in range(0, 528, 48*3):
             try:
                 # if the crop is not a square, pass and don't put in dataset
                 crop_pos = (x, y)
@@ -89,6 +100,12 @@ def select_incorrect_crops(img_path, crop_dim=(48, 48), list1=X_1, list2=X_2, cl
                 pass
 
 def create_training_set(data_path):
+    """
+    Creates 3 arrays containing image crops and wether they are adjacent or not
+    :param data_path:
+    :return:
+    """
+
     curr_dir = os.path.dirname(__file__)
     img_dir = os.path.realpath(os.path.join(curr_dir,data_path))
 
@@ -114,6 +131,11 @@ class FeatureExtraction:
         self.model = VGG16(weights='imagenet', include_top=False)
 
     def _feature_extraction(self, img_path):
+        """
+        Keras
+        :param img_path:
+        :return:
+        """
         img = image.load_img(img_path, target_size=(48, 48))
         x = image.img_to_array(img)
         x = np.expand_dims(x, axis=0)
@@ -121,25 +143,50 @@ class FeatureExtraction:
         return self.model.predict(x)
 
     def _merge_features(self, features1, features2):
+        """
+        Merges the features of 2 image crops in one array
+        :param features1:
+        :param features2:
+        :return:
+        """
         features1 = np.reshape(features1, [-1])
         features2 = np.reshape(features2, [-1])
         return np.concatenate((features1, features2))
 
-    def __call__(self, img_path1, img_path2):
+    def extract_feature_pair(self, img_path1, img_path2):
+        """
+        What does this do?
+        :param img_path1:
+        :param img_path2:
+        :return:
+        """
         features_im1 = self._feature_extraction(img_path1)
         features_im2 = self._feature_extraction(img_path2)
         return self._merge_features(features_im1, features_im2)
 
+    def extract_feats_from_list(self, list):
+        feats = []
+        for file in list:
+            feats.append(np.reshape(self._feature_extraction(file), [1, -1]))
+        return feats
+
+    def __del__(self):
+        del self.model
 
 def generate_dataset(image_path, save_path):
-
+    """
+    Creates a pickle file of images in a specified path
+    :param image_path:
+    :param save_path:
+    :return:
+    """
     feats = FeatureExtraction()
     training_set = create_training_set(image_path)
     features = []
     Ys = []
     for im1, im2, Y in tqdm.tqdm(zip(*training_set), total=len(training_set[-1])):
         try:
-            features.append(feats(im1, im2))
+            features.append(feats.extract_feature_pair(im1, im2)) # why are we not using merge features?
             Ys.append(Y)
         except(OSError):
             print("Corrupted file.... :(")
