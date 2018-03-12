@@ -16,7 +16,7 @@ def img_read(img_path):
     return img
 
 
-def input_directory(msg=None, dir_root="../../../images"):
+def input_directory(msg=None, dir_root="../../.."):
     """
     Prompts the user for an image in the default project images location
     :param files_root: str

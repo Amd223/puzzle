@@ -27,10 +27,7 @@ def crop_one(img_path, crop_dim, crop_pos=(0, 0), save=False):
     crop_width, crop_height = crop_dim
     crop_x, crop_y = crop_pos
 
-    # Load image
-    #img = img_read(img_path)
     img = Image.open(img_path)
-
     img = resizeimage.resize_cover(img, [528, 528])
     img = np.array(img)
 
@@ -42,13 +39,13 @@ def crop_one(img_path, crop_dim, crop_pos=(0, 0), save=False):
     if not save:
         return crop_img
 
-    # Create temp dir of outputs
-    tmp_dir = tempfile.mkdtemp()
-    _, img_extension = os.path.splitext(img_path)
-    crop_name = os.path.join(tmp_dir, 'crop{}'.format(img_extension))
-    cv2.imwrite(crop_name, crop_img)
-
-    return crop_name # how to find this tmp dir?
+    # # Create temp dir of outputs
+    # tmp_dir = tempfile.mkdtemp()
+    # _, img_extension = os.path.splitext(img_path)
+    # crop_name = os.path.join(tmp_dir, 'crop{}'.format(img_extension))
+    # cv2.imwrite(crop_name, crop_img)
+    #
+    # return crop_name # how to find this tmp dir?
 
 
 
@@ -141,7 +138,7 @@ class FeatureExtraction:
 
     def _feature_extraction(self, img_path):
         """
-        Keras
+        Keras feature extraction model
         :param img_path:
         :return:
         """

@@ -18,24 +18,24 @@ def crop_puzzle(img_path, crop_dimensions=(48,48)):
     X = []
     for i in range(0, 512, 48):
         for j in range(0, 512, 48):
-            filename = crop_one(img_path, crop_dimensions, crop_pos=(i,j), save=True)
+            filename = crop_one(img_path, crop_dimensions, crop_pos=(i,j), save=False)
             X.append(filename)
     return X
 
-def reconstruct(img_path):
-    """
-    Reconstructs an original image from a set of image pieces
-    :param img_path:
-    :return:
-    """
-
-    filenames = crop_puzzle(img_path, (48, 48))
-
-    feat_extractor = FeatureExtraction()
-    features = feat_extractor.extract_feats_from_list(filenames)
-
-    for i in range(len(features)):
-        print(evaluate_pieces(rfc, features[i], features[i + 1]))
+# def reconstruct(img_path):
+#     """
+#     Reconstructs an original image from a set of image pieces
+#     :param img_path:
+#     :return:
+#     """
+#
+#     filenames = crop_puzzle(img_path, (48, 48))
+#
+#     feat_extractor = FeatureExtraction()
+#     features = feat_extractor.extract_feats_from_list(filenames)
+#
+#     for i in range(len(features)):
+#         print(evaluate_pieces(rfc, features[i], features[i + 1]))
 
 def evaluate_pieces(rfc, feat1, feat2):
     """
@@ -57,20 +57,29 @@ def load_rfc(filename):
 
 
 
+
+
 if __name__ == "__main__":
     rfc = load_rfc("rfc.pkl")
+
+
     img_path = input_directory()
     filenames = crop_puzzle(img_path, (48,48))
 
     feat_extractor = FeatureExtraction()
     features = feat_extractor.extract_feats_from_list(filenames)
 
-    for i in range(len(features)):
-        print(evaluate_pieces(rfc, features[i], features[i+1]))
+
+
+    # for i in range(len(features)):
+    #     print(evaluate_pieces(rfc, features[i], features[i+1]))
 
 
 
-
-
+# Take a random piece
+# Prend list de pieces qui a etait mise dans le puzzle et une autre liste les pieces sans
+# Liste de positions et autre liste de pieces
+# Prendre la liste et chaque element mettre a la position
+# slicing in open cv
 
 
