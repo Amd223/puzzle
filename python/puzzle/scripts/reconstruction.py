@@ -18,7 +18,7 @@ def crop_puzzle(img_path, crop_dimensions=(48,48)):
     X = []
     for i in range(0, 512, 48):
         for j in range(0, 512, 48):
-            filename = crop_one(img_path, crop_dimensions, crop_pos=(i,j), save=False)
+            filename = crop_one(img_path, crop_dimensions, crop_pos=(i, j))
             X.append(filename)
     return X
 

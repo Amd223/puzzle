@@ -34,12 +34,12 @@ def reconstruct(img_path):
 
     for i, feats_left in enumerate(features):  # i is index of feats left in features. eg. features[i] == feats_left
         for j, feats_right in enumerate(features):
-            if i == j:
-                pass
-            probabilities2[i, j] = 1/np.sqrt(np.sum(np.square(pieces[i][:,-1,:] - pieces[j][:,0,:])))
-            probabilities[i,j] = rfc.predict_proba(np.concatenate((feats_left, feats_right), axis=-1))[0][0]
+            print(feats_left.shape, feats_right.shape)
+            if i != j:
+                # probabilities[i, j] = 1/np.sqrt(np.sum(np.square(pieces[i][:,-1,:] - pieces[j][:,0,:])))
+                probabilities[i,j] = rfc.predict_proba(np.concatenate((feats_left, feats_right), axis=-1))[0][0]
 
-    #left, right = np.unravel_index(np.argmax(probabilities, axis=None), probabilities.shape)
+    left, right = np.unravel_index(np.argmax(probabilities, axis=None), probabilities.shape)
     left = 0
     combined_image = pieces[left]
     probabilities[:, left] = 0
