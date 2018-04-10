@@ -10,10 +10,12 @@ def resize_all(dir_in, **kwargs):
     dir_out = os.path.join(dir_in, "resized")
     os.makedirs(dir_out, exist_ok=True)
 
-    images = glob.glob(os.path.join(dir_in, "*.*"))
+    images = glob.glob(os.path.join(dir_in, "**/*"))
+    print(images)
     for img_path_in in images:
         rel_path = os.path.relpath(img_path_in, dir_in)
         img_path_out = os.path.join(dir_out, rel_path)
+        os.makedirs(os.path.dirname(img_path_out), exist_ok=True)
         img_resize(img_path_in, img_path_out, **kwargs)
 
 
@@ -30,5 +32,4 @@ def crop_all(dir_in, **kwargs):
 
 if __name__ == "__main__":
     dir_in = input_directory()
-    dir_out = os.path.join(dir_in, "crop")
-    crop_loulou(dir_in, block_dim= (16,16))
+    resize_all(dir_in, size=528)
