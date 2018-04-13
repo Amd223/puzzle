@@ -13,13 +13,13 @@ import random
 import sys
 import json
 import os
+from multiprocessing import Process
 
 import times
 import requests
 import flickr_api
 from PIL import Image
-from multiprocessing import Process
-from resizeimage import resizeimage, imageexceptions
+from resizeimage import resizeimage
 
 API_KEY = 'd5c61f392ebcafccb59aee4c2019f16c'
 API_SECRET = 'c1fe6c152d3f9600'
