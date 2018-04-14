@@ -1,6 +1,9 @@
+import os
 import pickle
 
-import os
+import multiprocessing
+import numpy as np
+
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_curve, auc
@@ -11,6 +14,24 @@ from sklearn.svm import SVC, LinearSVC
 
 from puzzle.data_collection.create_sets import RelativePosition
 from puzzle.training_classifiers.extractors.vgg16_features import VGG16FeatureExtractor
+
+
+def extract_buggy_pickle(x, y):
+    # If pickle is fine
+    if len(y) > 0:
+        return x, y
+
+    xx = []
+    yy = []
+    it = (e for e in x)
+    try:
+        while True:
+            xx.append(next(it))
+            yy.append(next(it))
+    except StopIteration:
+        pass
+
+    return np.array(xx), np.array(yy)
 
 
 def train_classifiers(feature, image_class=None, do_plot=True, display=True):
@@ -29,36 +50,45 @@ def train_classifiers(feature, image_class=None, do_plot=True, display=True):
 
         print('Using training set ' + train_set_path)
         with open(train_set_path, mode="rb") as fp:
-            x_train, y_train = pickle.load(fp)
+            # TODO: remove buggy pickle patch when pickle will be reconstructed
+            # x_train, y_train = pickle.load(fp)
+            x_train, y_train = extract_buggy_pickle(*pickle.load(fp))
 
         print('Using testing set ' + test_set_path)
         with open(test_set_path, mode="rb") as fp:
-            x_test, y_test = pickle.load(fp)
+            # TODO: remove buggy pickle patch when pickle will be reconstructed
+            # x_test, y_test = pickle.load(fp)
+             x_test, y_test = extract_buggy_pickle(*pickle.load(fp))
 
         # Training classifiers
         lregression = LogisticRegression()
-        lregression.fit(x_train, y_train)
-        print(lregression.score(x_test, y_test))
-
         svm = SVC()
-        svm.fit(x_train, y_train)
-        print(svm.score(x_test, y_test))
-
         linsvm = LinearSVC()
-        linsvm.fit(x_train, y_train)
-        print(linsvm.score(x_test, y_test))
-
         knn = KNeighborsClassifier()
-        knn.fit(x_train, y_train)
-        print(knn.score(x_test, y_test))
-
         clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
-        clf.fit(x_train, y_train)
-        print(clf.score(x_test, y_test))
-
         rfc = RandomForestClassifier()
-        rfc.fit(x_train, y_train)
-        print(rfc.score(x_test, y_test))
+        classifiers = [lregression, svm, linsvm, knn, clf, rfc]
+
+        def worker(classifier, return_dict):
+            '''worker function'''
+            classifier.fit(x_train, y_train)
+            return_dict[classifier] = classifier.score(x_test, y_test)
+
+        manager = multiprocessing.Manager()
+        scores = manager.dict()
+        jobs = []
+
+        for c in classifiers:
+            p = multiprocessing.Process(target=worker, args=(c, scores))
+            jobs.append(p)
+            p.start()
+
+        for p in jobs:
+            p.join()
+
+        print('Classifier results {}-{}-{}'.format(class_name, feature, rel_pos))
+        for c, score in scores:
+            print('   >>> {} : {}'.format(c, score))
 
         # Saving to pickle file...
         save_path = mkd('trained_classifiers/rfc-{}-{}-{}.pkl')
@@ -124,7 +154,15 @@ def train_classifiers(feature, image_class=None, do_plot=True, display=True):
 
 if __name__ == "__main__":
 
+    jobs = []
     for f in [VGG16FeatureExtractor.name()]:
         for c in ['animals', 'art', 'cities', 'landscapes', 'portraits', 'space', None]:
+            # train_classifiers(f, c, do_plot=True, display=True)
+
             print('\nTraining classifier for {}...'.format(c))
-            train_classifiers(f, c, do_plot=False, display=False)
+            p = multiprocessing.Process(target=train_classifiers, args=(f, c), kwargs=dict(do_plot=False, display=True))
+            jobs.append(p)
+            p.start()
+
+    for p in jobs:
+        p.join()
