@@ -27,7 +27,7 @@ def generate_extracted_features(image_set, featureExtractor, pickle_name):
     for im1, im2, y in tqdm.tqdm(zip(*image_set), total=len(image_set[0])):
         try:
             features.append(featureExtractor.extract(im1, im2))
-            features.append(y)
+            ys.append(y)
         except(Exception) as e:
             print('Error on sample: {}'.format(e))
 
