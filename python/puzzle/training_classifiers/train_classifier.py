@@ -14,7 +14,7 @@ from puzzle.data_collection.create_sets import RelativePosition
 from puzzle.training_classifiers.extractors.vgg16_features import VGG16FeatureExtractor
 
 
-def train_classifiers(feature, image_class=None, do_plot=True):
+def train_classifiers(feature, image_class=None, do_plot=True, display=True):
     class_name = image_class if image_class is not None else 'all'
 
     project_base = os.path.realpath(os.path.join(os.path.dirname(__file__), '../../..'))
@@ -115,7 +115,11 @@ def train_classifiers(feature, image_class=None, do_plot=True):
         plt.ylabel('True Positive Rate')
         plt.title('Receiver operating characteristic example')
         plt.legend(loc="lower right")
-        plt.show()
+
+        if display:
+            plt.show()
+        else:
+            plt.savefig(mkd('trained_classifiers/rfc-{}-{}-{}.png'))
 
 
 if __name__ == "__main__":
@@ -123,4 +127,4 @@ if __name__ == "__main__":
     for f in [VGG16FeatureExtractor.name()]:
         for c in ['animals', 'art', 'cities', 'landscapes', 'portraits', 'space', None]:
             print('\nTraining classifier for {}...'.format(c))
-            train_classifiers(f, c, do_plot=True)
+            train_classifiers(f, c, do_plot=True, display=False)
