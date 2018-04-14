@@ -13,9 +13,6 @@ def generate_extracted_features(image_set, featureExtractor, pickle_name):
     Creates a pickle file of images in a specified path
     """
     # Construct path to save pickle file to
-    print('1')
-    # featureExtractor = VGG16FeatureExtractor()
-    print('2')
     curr_dir    = os.path.dirname(__file__)
     pickle_file = '../../../extracted_features/{}.pkl'.format(pickle_name)
     save_path   = os.path.realpath(os.path.join(curr_dir, pickle_file))
@@ -25,13 +22,14 @@ def generate_extracted_features(image_set, featureExtractor, pickle_name):
 
     # Perform feature extraction
     features = []
-    img1, img2, ys = image_set#[:]
+    ys = []
 
-    for im1, im2 in tqdm.tqdm(zip(img1, img2), total=len(img1)):
+    for im1, im2, y in tqdm.tqdm(zip(*image_set), total=len(image_set[0])):
         try:
             features.append(featureExtractor.extract(im1, im2))
-        except(OSError):
-            print("Corrupted file.... :(")
+            features.append(y)
+        except(Exception) as e:
+            print('Error on sample: {}'.format(e))
 
     # Save results to pickle file
     features = np.array(features)
@@ -47,22 +45,18 @@ def do_feature_extraction(feature_extractors, image_class=None):
     print('Get training / test sets for down / right positions')
     sets = get_sets(image_class, seed=42)
 
-    jobs = []
     for feature_extractor in feature_extractors:
         for set_name, image_set in zip(sets_name, sets):
             pickle_name = '{}-{}-{}'.format(class_name, feature_extractor.name(), set_name)
 
             print('Start feature extraction for ' + pickle_name)
-            # generate_extracted_features(image_set, feature_extractor, pickle_name)
-            p = Process(target=generate_extracted_features, args=(image_set, feature_extractor, pickle_name))
-            p.start()
-            jobs.append(p)
-
-    for p in jobs:
-        p.join()
+            generate_extracted_features(image_set, feature_extractor, pickle_name)
 
 
 if __name__ == "__main__":
-    do_feature_extraction([
-        VGG16FeatureExtractor()
-    ], image_class='landscapes')
+
+    for c in ['animals', 'art', 'cities', 'landscapes', 'portraits', 'space', None]:
+        print('\nExtracting {}...'.format(c))
+        do_feature_extraction([
+            VGG16FeatureExtractor()
+        ], image_class=c)
