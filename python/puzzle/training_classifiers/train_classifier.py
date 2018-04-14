@@ -1,6 +1,5 @@
 import pickle
 
-import matplotlib.pyplot as plt
 import os
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -103,6 +102,7 @@ def train_classifiers(feature, image_class=None, do_plot=True, display=True):
         # obtenir les scores
         # 2 variables en output?
 
+        import matplotlib.pyplot as plt
         plt.figure()
         plt.plot(fpr_lregression, tpr_lregression, color='cornflowerblue', label='ROC curve lregression (area = %0.2f)' % roc_auc_lregression)
         plt.plot(fpr_svm, tpr_svm, color='darkorange', label='ROC curve SVM (area = %0.2f)' % roc_auc_svm)
@@ -127,4 +127,4 @@ if __name__ == "__main__":
     for f in [VGG16FeatureExtractor.name()]:
         for c in ['animals', 'art', 'cities', 'landscapes', 'portraits', 'space', None]:
             print('\nTraining classifier for {}...'.format(c))
-            train_classifiers(f, c, do_plot=True, display=False)
+            train_classifiers(f, c, do_plot=False, display=False)
