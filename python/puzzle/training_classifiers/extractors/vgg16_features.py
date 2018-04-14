@@ -15,7 +15,8 @@ class VGG16FeatureExtractor(FeatureExtractor):
         # layer_name="block2_pool"
         # self.model = Model(inputs=vgg_model.input, outputs=vgg_model.get_layer(layer_name).output)
 
-    def name(self):
+    @staticmethod
+    def name():
         return 'vgg16'
 
     def _feature_extraction(self, img):

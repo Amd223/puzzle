@@ -2,7 +2,8 @@ from puzzle.training_classifiers.extractors.feature_extractor import FeatureExtr
 
 
 class GradientFeatureExtractor(FeatureExtractor):
-    def name(self):
+    @staticmethod
+    def name():
         return 'hist-gradient'
 
     def extract(self, img1, img2):

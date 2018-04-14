@@ -2,7 +2,8 @@ from puzzle.training_classifiers.extractors.feature_extractor import FeatureExtr
 
 
 class L2FeatureExtractor(FeatureExtractor):
-    def name(self):
+    @staticmethod
+    def name():
         return 'L2'
 
     def extract(self, img1, img2):

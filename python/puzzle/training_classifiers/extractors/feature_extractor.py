@@ -1,5 +1,6 @@
 class FeatureExtractor:
-    def name(self):
+    @staticmethod
+    def name():
         raise NotImplementedError('Need to implement this')
 
     def extract(self, img1, img2):
