@@ -15,7 +15,7 @@ class ColourFeatureExtractor(FeatureExtractor):
         diff = []
         for i, col in enumerate(['b', 'g', 'r']):
             hist1 = cv2.calcHist([img1], [i], None, [no_features], [0, no_features])
-            hist2 = cv2.calcHist([img1], [i], None, [no_features], [0, no_features])
+            hist2 = cv2.calcHist([img2], [i], None, [no_features], [0, no_features])
             diff.append(np.square(hist1 - hist2))
 
         return np.sqrt(np.sum(diff, axis=0)).reshape(-1)
