@@ -227,7 +227,7 @@ if __name__ == "__main__":
                 p = multiprocessing.Process(
                     target=train_classifiers,
                     args=(rel_pos, f, c),
-                    kwargs=dict(do_plot=True, save_plot_info=False, display=False)
+                    kwargs=dict(do_plot=True, save_plot_info=True, display=False)
                 )
                 jobs.append(p)
                 p.start()
