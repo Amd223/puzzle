@@ -214,9 +214,6 @@ if __name__ == "__main__":
     # Relative positions
     rel_positions = [p.value for p in RelativePosition]
 
-    features = ['L2']
-    images = ['animals']
-
     jobs = []
     for f in features:
         for c in images:
