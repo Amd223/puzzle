@@ -1,10 +1,11 @@
 import os
 import pickle
 
-import numpy as np
 import tqdm
+import numpy as np
 
 from puzzle.data_collection.create_sets import get_sets
+from puzzle.training_classifiers.extractors.l2_features import L2FeatureExtractor
 from puzzle.training_classifiers.extractors.vgg16_features import VGG16FeatureExtractor
 
 
@@ -26,12 +27,23 @@ def generate_extracted_features(image_set, featureExtractor, pickle_name):
     features = []
     ys = []
 
-    for im1, im2, y in tqdm.tqdm(zip(*image_set), total=len(image_set[0])):
+    errors = 0
+    total = len(image_set[0])
+    last_error = None
+
+    for im1, im2, y in tqdm.tqdm(zip(*image_set), total=total):
         try:
             features.append(featureExtractor.extract(im1, im2, is_down=is_down))
             ys.append(y)
-        except(Exception) as e:
-            print('Error on sample: {}'.format(e))
+        # except(Exception) as e:
+        except OSError as e:
+            msg = str(e)
+            if msg != last_error:
+                print('Error on sample: ' + msg)
+                last_error = msg
+            errors += 1
+
+    print('Finished with errors: %d%% (%d/%d)' % (errors / total * 100, errors, total))
 
     # Save results to pickle file
     features = np.array(features)
@@ -51,7 +63,7 @@ def do_feature_extraction(feature_extractors, image_class=None):
         for set_name, image_set in zip(sets_name, sets):
             pickle_name = '{}-{}-{}'.format(class_name, feature_extractor.name(), set_name)
 
-            print('Start feature extraction for ' + pickle_name)
+            print('\nStart feature extraction for ' + pickle_name)
             generate_extracted_features(image_set, feature_extractor, pickle_name)
 
 
@@ -60,5 +72,6 @@ if __name__ == "__main__":
     for c in ['animals', 'art', 'cities', 'landscapes', 'portraits', 'space', None]:
         print('\nExtracting {}...'.format(c))
         do_feature_extraction([
-            VGG16FeatureExtractor()
+            # VGG16FeatureExtractor()
+            L2FeatureExtractor()
         ], image_class=c)

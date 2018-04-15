@@ -49,7 +49,9 @@ class VGG16FeatureExtractor(FeatureExtractor):
         else:
             img = np.concatenate((img1, img2), axis=1)
         feat = self._feature_extraction(img)
-        return np.reshape(feat, [-1])
+        r = np.reshape(feat, [-1])
+        print(img1.shape, img2.shape, r.shape)
+        return r
 
     def extract_feats_from_list(self, list):
         return [np.reshape(self._feature_extraction(file), [1, -1]) for file in list]

@@ -4,6 +4,7 @@ import random
 from enum import Enum
 
 import numpy as np
+import sys
 import tqdm
 from PIL import Image
 
@@ -123,6 +124,7 @@ def create_training_set(images, rel_pos):
         RelativePosition.DOWN:  select_correct_crops_down,
     }
 
+    sys.stdout.flush()
     for image_path in tqdm.tqdm(images, total=len(images)):
         img = np.array(Image.open(image_path))
 
