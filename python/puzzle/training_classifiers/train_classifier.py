@@ -100,10 +100,10 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
     fpr_lregression, tpr_lregression, thresholds = roc_curve(y, pred_lregression)
     roc_auc_lregression = auc(fpr_lregression, tpr_lregression)
 
-    pred_svm = svm.decision_function(x_test)
-    fpr_svm, tpr_svm, thresholds = roc_curve(y, pred_svm)
-    roc_auc_svm = auc(fpr_svm, tpr_svm)
-
+    # pred_svm = svm.decision_function(x_test)
+    # fpr_svm, tpr_svm, thresholds = roc_curve(y, pred_svm)
+    # roc_auc_svm = auc(fpr_svm, tpr_svm)
+    #
     pred_linsvm = linsvm.decision_function(x_test)
     fpr_linsvm, tpr_linsvm, thresholds = roc_curve(y, pred_linsvm)
     roc_auc_linsvm = auc(fpr_linsvm, tpr_linsvm)
@@ -124,7 +124,7 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
 
     info = [
         (fpr_lregression, tpr_lregression, roc_auc_lregression),
-        (fpr_svm, tpr_svm, roc_auc_svm),
+        # (fpr_svm, tpr_svm, roc_auc_svm),
         (fpr_linsvm, tpr_linsvm, roc_auc_linsvm)
     ]
 
@@ -160,13 +160,13 @@ def plot_classifier_roc(info, display, graph_path):
 
     [
         (fpr_lregression, tpr_lregression, roc_auc_lregression),
-        (fpr_svm, tpr_svm, roc_auc_svm),
+        # (fpr_svm, tpr_svm, roc_auc_svm),
         (fpr_linsvm, tpr_linsvm, roc_auc_linsvm)
     ] = info
 
     plt.figure()
     plt.plot(fpr_lregression, tpr_lregression, color='cornflowerblue', label='ROC curve lregression (area = %0.2f)' % roc_auc_lregression)
-    plt.plot(fpr_svm, tpr_svm, color='darkorange', label='ROC curve SVM (area = %0.2f)' % roc_auc_svm)
+    # plt.plot(fpr_svm, tpr_svm, color='darkorange', label='ROC curve SVM (area = %0.2f)' % roc_auc_svm)
     plt.plot(fpr_linsvm, tpr_linsvm, color='green', label='ROC curve LINSVM (area = %0.2f)' % roc_auc_linsvm)
     # plt.plot(fpr_knn, tpr_knn, color='aqua', label='ROC curve KNN (area = %0.2f)' % roc_auc_knn)
     # plt.plot(fpr_clf, tpr_clf, color='black', label='ROC curve clf (area = %0.2f)' % roc_auc_clf)
