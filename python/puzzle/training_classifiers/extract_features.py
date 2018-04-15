@@ -5,6 +5,7 @@ import tqdm
 import numpy as np
 
 from puzzle.data_collection.create_sets import get_sets
+from puzzle.training_classifiers.extractors.colour_features import ColourFeatureExtractor
 from puzzle.training_classifiers.extractors.l2_features import L2FeatureExtractor
 from puzzle.training_classifiers.extractors.vgg16_features import VGG16FeatureExtractor
 
@@ -73,5 +74,6 @@ if __name__ == "__main__":
         print('\nExtracting {}...'.format(c))
         do_feature_extraction([
             # VGG16FeatureExtractor()
-            L2FeatureExtractor()
+            # L2FeatureExtractor()
+            ColourFeatureExtractor()
         ], image_class=c)
