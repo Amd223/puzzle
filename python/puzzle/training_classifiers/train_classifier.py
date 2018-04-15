@@ -1,10 +1,9 @@
+import multiprocessing
 import operator
 import os
 import pickle
 
-import multiprocessing
 import numpy as np
-
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_curve, auc

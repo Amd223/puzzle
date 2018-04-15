@@ -1,8 +1,8 @@
 import os
-import tqdm
 import pickle
+
 import numpy as np
-from multiprocessing import Process
+import tqdm
 
 from puzzle.data_collection.create_sets import get_sets
 from puzzle.training_classifiers.extractors.vgg16_features import VGG16FeatureExtractor
