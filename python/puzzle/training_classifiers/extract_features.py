@@ -12,6 +12,8 @@ def generate_extracted_features(image_set, featureExtractor, pickle_name):
     """
     Creates a pickle file of images in a specified path
     """
+    is_down = pickle_name.endswith('down')
+
     # Construct path to save pickle file to
     curr_dir    = os.path.dirname(__file__)
     pickle_file = '../../../extracted_features/{}.pkl'.format(pickle_name)
@@ -26,7 +28,7 @@ def generate_extracted_features(image_set, featureExtractor, pickle_name):
 
     for im1, im2, y in tqdm.tqdm(zip(*image_set), total=len(image_set[0])):
         try:
-            features.append(featureExtractor.extract(im1, im2))
+            features.append(featureExtractor.extract(im1, im2, is_down=is_down))
             ys.append(y)
         except(Exception) as e:
             print('Error on sample: {}'.format(e))

@@ -6,7 +6,7 @@ class GradientFeatureExtractor(FeatureExtractor):
     def name():
         return 'hist-gradient'
 
-    def extract(self, img1, img2):
+    def extract(self, img1, img2, **kwargs):
         pass
 
     def extract_feats_from_list(self, list):

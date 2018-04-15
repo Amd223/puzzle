@@ -43,8 +43,11 @@ class VGG16FeatureExtractor(FeatureExtractor):
         res = np.concatenate((features1, features2))
         return res
 
-    def extract(self, img1, img2):
-        img = np.concatenate((img1, img2), axis=0)
+    def extract(self, img1, img2, is_down=True, **kwargs):
+        if is_down:
+            img = np.concatenate((img1, img2), axis=0)
+        else:
+            img = np.concatenate((img1, img2), axis=1)
         feat = self._feature_extraction(img)
         return np.reshape(feat, [-1])
 

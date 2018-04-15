@@ -2,9 +2,7 @@ import glob
 import os
 import random
 from enum import Enum
-from multiprocessing import Process
 
-import multiprocessing
 import numpy as np
 import tqdm
 from PIL import Image
@@ -176,10 +174,10 @@ def get_sets(image_class=None, test_set_portion=0.1, seed=None):
 
     # Generate training / test sets
     args = [
-        (training_images, RelativePosition.DOWN, ),
-        (training_images, RelativePosition.RIGHT, ),
-        (test_images,     RelativePosition.DOWN, ),
-        (test_images,     RelativePosition.RIGHT, ),
+        (training_images, RelativePosition.DOWN),
+        (training_images, RelativePosition.RIGHT),
+        (test_images,     RelativePosition.DOWN),
+        (test_images,     RelativePosition.RIGHT),
     ]
 
     res = []
