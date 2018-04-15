@@ -38,14 +38,15 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
         x_test, y_test = pickle.load(fp)
 
     # Training classifiers
-    # 'sag' solver for large datasets -- http://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
-    lregression = LogisticRegression(solver='sag')
-    svm = SVC()
-    linsvm = LinearSVC()
-    knn = KNeighborsClassifier()
-    clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
-    rfc = RandomForestClassifier()
-    classifiers = [lregression, svm, linsvm, knn, clf, rfc]
+    classifiers = [
+        # 'sag' solver for large datasets -- http://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+        LogisticRegression(solver='sag'),
+        #SVC(),
+        LinearSVC(),
+        KNeighborsClassifier(),
+        MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1),
+        RandomForestClassifier()
+    ]
 
     def worker(id, classifier, return_dict):
         """worker function"""
@@ -53,7 +54,7 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
         print('Starting {}...'.format(classifier.__class__.__name__))
         classifier.fit(x_train, y_train)
         return_dict[id] = (classifier, classifier.score(x_test, y_test))
-        print('Finished {} in {}sec'.format(classifier.__class__.__name__, time.time() - start))
+        print('Finished {0} in {1:.2f}sec'.format(classifier.__class__.__name__, time.time() - start))
 
     manager = multiprocessing.Manager()
     scores = manager.dict()
@@ -67,8 +68,6 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
     for i, p in enumerate(jobs):
         p.join()
         classifiers[i] = scores[i][0]
-
-    [lregression, svm, linsvm, knn, clf, rfc] = classifiers
 
     # Saving to pickle file...
     best_classifier, best_score = max(scores.values(), key=operator.itemgetter(1))
@@ -95,37 +94,41 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
 
     # Plotting...
     y = label_binarize(y_test, classes=[0, 1])
+    it = (c for c in classifiers)
 
-    pred_lregression = lregression.decision_function(x_test)
+    pred_lregression = next(it).decision_function(x_test)
     fpr_lregression, tpr_lregression, thresholds = roc_curve(y, pred_lregression)
     roc_auc_lregression = auc(fpr_lregression, tpr_lregression)
 
-    # pred_svm = svm.decision_function(x_test)
+    # pred_svm = next(it).decision_function(x_test)
     # fpr_svm, tpr_svm, thresholds = roc_curve(y, pred_svm)
     # roc_auc_svm = auc(fpr_svm, tpr_svm)
-    #
-    pred_linsvm = linsvm.decision_function(x_test)
+
+    pred_linsvm = next(it).decision_function(x_test)
     fpr_linsvm, tpr_linsvm, thresholds = roc_curve(y, pred_linsvm)
     roc_auc_linsvm = auc(fpr_linsvm, tpr_linsvm)
 
-    # pred_knn = knn.predict(x_test)
-    # fpr_knn, tpr_knn, thresholds = roc_curve(y, pred_knn)
-    # roc_auc_knn = auc(fpr_knn, tpr_knn)
+    pred_knn = next(it).predict_proba(x_test)[:, 1]
+    fpr_knn, tpr_knn, thresholds = roc_curve(y, pred_knn)
+    roc_auc_knn = auc(fpr_knn, tpr_knn)
 
-    # pred_clf = clf.predict(x_test)
-    # fpr_clf, tpr_clf, thresholds = roc_curve(y, pred_clf)
-    # roc_auc_clf = auc(fpr_clf, tpr_clf)
-    #
-    # pred_rfc = rfc.predict(x_test)
-    # fpr_rfc, tpr_rfc, thresholds = roc_curve(y, pred_rfc)
-    # roc_auc_rfc = auc(fpr_rfc, tpr_rfc)
+    pred_clf = next(it).predict_proba(x_test)[:, 1]
+    fpr_clf, tpr_clf, thresholds = roc_curve(y, pred_clf)
+    roc_auc_clf = auc(fpr_clf, tpr_clf)
+
+    pred_rfc = next(it).predict_proba(x_test)[:, 1]
+    fpr_rfc, tpr_rfc, thresholds = roc_curve(y, pred_rfc)
+    roc_auc_rfc = auc(fpr_rfc, tpr_rfc)
     # obtenir les scores
     # 2 variables en output?
 
     info = [
         (fpr_lregression, tpr_lregression, roc_auc_lregression),
         # (fpr_svm, tpr_svm, roc_auc_svm),
-        (fpr_linsvm, tpr_linsvm, roc_auc_linsvm)
+        (fpr_linsvm, tpr_linsvm, roc_auc_linsvm),
+        (fpr_knn, tpr_knn, roc_auc_knn),
+        (fpr_clf, tpr_clf, roc_auc_clf),
+        (fpr_rfc, tpr_rfc, roc_auc_rfc),
     ]
 
     if save_plot_info:
@@ -161,16 +164,19 @@ def plot_classifier_roc(info, display, graph_path):
     [
         (fpr_lregression, tpr_lregression, roc_auc_lregression),
         # (fpr_svm, tpr_svm, roc_auc_svm),
-        (fpr_linsvm, tpr_linsvm, roc_auc_linsvm)
+        (fpr_linsvm, tpr_linsvm, roc_auc_linsvm),
+        (fpr_knn, tpr_knn, roc_auc_knn),
+        (fpr_clf, tpr_clf, roc_auc_clf),
+        (fpr_rfc, tpr_rfc, roc_auc_rfc),
     ] = info
 
     plt.figure()
     plt.plot(fpr_lregression, tpr_lregression, color='cornflowerblue', label='ROC curve lregression (area = %0.2f)' % roc_auc_lregression)
     # plt.plot(fpr_svm, tpr_svm, color='darkorange', label='ROC curve SVM (area = %0.2f)' % roc_auc_svm)
     plt.plot(fpr_linsvm, tpr_linsvm, color='green', label='ROC curve LINSVM (area = %0.2f)' % roc_auc_linsvm)
-    # plt.plot(fpr_knn, tpr_knn, color='aqua', label='ROC curve KNN (area = %0.2f)' % roc_auc_knn)
-    # plt.plot(fpr_clf, tpr_clf, color='black', label='ROC curve clf (area = %0.2f)' % roc_auc_clf)
-    # plt.plot(fpr_rfc, tpr_rfc, color='darkgreen', label='ROC curve RFC (area = %0.2f)' % roc_auc_rfc)
+    plt.plot(fpr_knn, tpr_knn, color='aqua', label='ROC curve KNN (area = %0.2f)' % roc_auc_knn)
+    plt.plot(fpr_clf, tpr_clf, color='black', label='ROC curve clf (area = %0.2f)' % roc_auc_clf)
+    plt.plot(fpr_rfc, tpr_rfc, color='darkgreen', label='ROC curve RFC (area = %0.2f)' % roc_auc_rfc)
     plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
@@ -208,17 +214,20 @@ if __name__ == "__main__":
     # Relative positions
     rel_positions = [p.value for p in RelativePosition]
 
+    features = ['L2']
+    images = ['animals']
+
     jobs = []
     for f in features:
         for c in images:
             for rel_pos in rel_positions:
                 # train_classifiers(f, c, do_plot=True, display=True)
 
-                print('\nTraining classifier for {}...'.format(c))
+                print('\nTraining classifier for {}-{}-{}...'.format(f, c, rel_pos))
                 p = multiprocessing.Process(
                     target=train_classifiers,
                     args=(rel_pos, f, c),
-                    kwargs=dict(do_plot=True, save_plot_info=True, display=False)
+                    kwargs=dict(do_plot=True, save_plot_info=False, display=False)
                 )
                 jobs.append(p)
                 p.start()
