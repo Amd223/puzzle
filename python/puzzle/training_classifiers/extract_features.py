@@ -36,8 +36,7 @@ def generate_extracted_features(image_set, featureExtractor, pickle_name):
         try:
             features.append(featureExtractor.extract(im1, im2, is_down=is_down))
             ys.append(y)
-        # except(Exception) as e:
-        except OSError as e:
+        except(Exception) as e:
             msg = str(e)
             if msg != last_error:
                 print('Error on sample: ' + msg)
