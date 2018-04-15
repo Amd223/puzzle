@@ -4,6 +4,7 @@ import operator
 import os
 import pickle
 
+import time
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_curve, auc
@@ -37,7 +38,8 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
         x_test, y_test = pickle.load(fp)
 
     # Training classifiers
-    lregression = LogisticRegression()
+    # 'sag' solver for large datasets -- http://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+    lregression = LogisticRegression(solver='sag')
     svm = SVC()
     linsvm = LinearSVC()
     knn = KNeighborsClassifier()
@@ -46,9 +48,12 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
     classifiers = [lregression, svm, linsvm, knn, clf, rfc]
 
     def worker(id, classifier, return_dict):
-        '''worker function'''
+        """worker function"""
+        start = time.time()
+        print('Starting {}...'.format(classifier.__class__.__name__))
         classifier.fit(x_train, y_train)
         return_dict[id] = (classifier, classifier.score(x_test, y_test))
+        print('Finished {} in {}sec'.format(classifier.__class__.__name__, time.time() - start))
 
     manager = multiprocessing.Manager()
     scores = manager.dict()
