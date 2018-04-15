@@ -1,9 +1,9 @@
+import argparse
 import multiprocessing
 import operator
 import os
 import pickle
 
-import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_curve, auc
@@ -13,26 +13,8 @@ from sklearn.preprocessing import label_binarize
 from sklearn.svm import SVC, LinearSVC
 
 from puzzle.data_collection.create_sets import RelativePosition
+from puzzle.training_classifiers.extractors.l2_features import L2FeatureExtractor
 from puzzle.training_classifiers.extractors.vgg16_features import VGG16FeatureExtractor
-
-
-def extract_buggy_pickle(x, y):
-    # If pickle is fine
-    if len(y) > 0:
-        return x, y
-
-    xx = []
-    yy = []
-    it = (e for e in x)
-
-    try:
-        while True:
-            xx.append(next(it))
-            yy.append(next(it))
-    except StopIteration:
-        pass
-
-    return np.array(xx), np.array(yy)
 
 
 def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plot_info=False, display=True):
@@ -48,15 +30,11 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
 
     print('Using training set ' + train_set_path)
     with open(train_set_path, mode="rb") as fp:
-        # TODO: remove buggy pickle patch when pickle will be reconstructed
-        # x_train, y_train = pickle.load(fp)
-        x_train, y_train = extract_buggy_pickle(*pickle.load(fp))
+        x_train, y_train = pickle.load(fp)
 
     print('Using testing set ' + test_set_path)
     with open(test_set_path, mode="rb") as fp:
-        # TODO: remove buggy pickle patch when pickle will be reconstructed
-        # x_test, y_test = pickle.load(fp)
-         x_test, y_test = extract_buggy_pickle(*pickle.load(fp))
+        x_test, y_test = pickle.load(fp)
 
     # Training classifiers
     lregression = LogisticRegression()
@@ -201,11 +179,33 @@ def plot_classifier_roc(info, display, graph_path):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--features', help='coma-separated list of features', type=str)
+    parser.add_argument('-i', '--images', help='coma-separated list of image classes', type=str)
+    args = parser.parse_args()
+
+    # Features
+    features = [VGG16FeatureExtractor.name(), L2FeatureExtractor.name()]
+    if args.features is not None:
+        feats_names = [f.strip() for f in args.features.split(',')]
+        features = [f for f in feats_names if f in features]
+    print('Using features: {}'.format(features))
+
+    # Image classes
+    images = ['animals', 'art', 'cities', 'landscapes', 'portraits', 'space', None]
+    if args.images is not None:
+        image_names = [i.strip() for i in args.images.split(',')]
+        images = [i for i in image_names if i in images]
+        if 'None' in image_names:
+            images += [None]
+    print('Using images: {}'.format(images))
+
+    # Relative positions
     rel_positions = [p.value for p in RelativePosition]
 
     jobs = []
-    for f in [VGG16FeatureExtractor.name()]:
-        for c in ['animals', 'art', 'cities', 'landscapes', 'portraits', 'space', None]:
+    for f in features:
+        for c in images:
             for rel_pos in rel_positions:
                 # train_classifiers(f, c, do_plot=True, display=True)
 
