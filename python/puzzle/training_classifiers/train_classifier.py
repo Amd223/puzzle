@@ -35,7 +35,7 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
     with open(train_set_path, mode="rb") as fp:
         x_train, y_train = pickle.load(fp)
         # For KNN, use less samples
-        no_samples = min(len(y_train), 50000)
+        no_samples = min(len(y_train), 100000)
         ids = list(range(no_samples))
         random.shuffle(ids)
         x_train_knn = [x_train[i] for i in ids]
