@@ -35,7 +35,7 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
     with open(train_set_path, mode="rb") as fp:
         x_train, y_train = pickle.load(fp)
         # For KNN, use less samples
-        no_samples = max(len(y_train), 50000)
+        no_samples = min(len(y_train), 50000)
         ids = list(range(no_samples))
         random.shuffle(ids)
         x_train_knn = [x_train[i] for i in ids]
@@ -59,13 +59,15 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
     def worker(id, classifier, return_dict):
         """worker function"""
         start = time.time()
-        print('Starting {}...'.format(classifier.__class__.__name__))
+        cls_name = classifier.__class__.__name__
         if isinstance(classifier, KNeighborsClassifier):
-            classifier.fit(x_train_knn, y_train_knn)
+            xs, ys = x_train_knn, y_train_knn
         else:
-            classifier.fit(x_train, y_train)
+            xs, ys = x_train, y_train
+        print('Starting {0: <22} on #samples={1: <6} / #features={2: <4}...'.format(cls_name, len(xs), len(xs[0])))
+        classifier.fit(xs, ys)
         return_dict[id] = (classifier, classifier.score(x_test, y_test))
-        print('Finished {0} in {1:.2f}sec'.format(classifier.__class__.__name__, time.time() - start))
+        print('Finished {0: <22} in {1:.2f}sec'.format(cls_name, time.time() - start))
 
     manager = multiprocessing.Manager()
     scores = manager.dict()
