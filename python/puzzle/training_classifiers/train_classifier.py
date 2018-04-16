@@ -48,12 +48,12 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
     # Training classifiers
     classifiers = [
         # 'sag' solver for large datasets -- http://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
-        LogisticRegression(solver='sag'),
+        LogisticRegression(solver='sag', n_jobs=-1),
         #SVC(),
         LinearSVC(),
-        KNeighborsClassifier(),
+        KNeighborsClassifier(n_jobs=-1),
         MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1),
-        RandomForestClassifier()
+        RandomForestClassifier(n_jobs=-1)
     ]
 
     def worker(id, classifier, return_dict):
