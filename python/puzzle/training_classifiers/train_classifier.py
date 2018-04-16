@@ -3,6 +3,7 @@ import multiprocessing
 import operator
 import os
 import pickle
+import random
 
 import time
 from sklearn.ensemble import RandomForestClassifier
@@ -33,6 +34,12 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
     print('Using training set ' + train_set_path)
     with open(train_set_path, mode="rb") as fp:
         x_train, y_train = pickle.load(fp)
+        # For KNN, use less samples
+        no_samples = max(len(y_train), 50000)
+        ids = list(range(no_samples))
+        random.shuffle(ids)
+        x_train_knn = [x_train[i] for i in ids]
+        y_train_knn = [y_train[i] for i in ids]
 
     print('Using testing set ' + test_set_path)
     with open(test_set_path, mode="rb") as fp:
@@ -53,7 +60,10 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
         """worker function"""
         start = time.time()
         print('Starting {}...'.format(classifier.__class__.__name__))
-        classifier.fit(x_train, y_train)
+        if isinstance(classifier, KNeighborsClassifier):
+            classifier.fit(x_train_knn, y_train_knn)
+        else:
+            classifier.fit(x_train, y_train)
         return_dict[id] = (classifier, classifier.score(x_test, y_test))
         print('Finished {0} in {1:.2f}sec'.format(classifier.__class__.__name__, time.time() - start))
 
