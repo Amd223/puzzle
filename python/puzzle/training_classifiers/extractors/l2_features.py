@@ -38,5 +38,5 @@ class L2FeatureExtractor(FeatureExtractor):
         # Flatten features
         return np.reshape(x, -1)
 
-    def extract_feats_from_list(self, list):
-        pass
+    # def extract_feats_from_list(self, list):
+    #     pass

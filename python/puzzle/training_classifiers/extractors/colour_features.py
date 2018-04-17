@@ -20,5 +20,5 @@ class ColourFeatureExtractor(FeatureExtractor):
 
         return np.sqrt(np.sum(diff, axis=0)).reshape(-1)
 
-    def extract_feats_from_list(self, list):
-        pass
+    # def extract_feats_from_list(self, list):
+    #     pass

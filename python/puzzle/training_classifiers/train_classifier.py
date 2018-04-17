@@ -16,6 +16,7 @@ from sklearn.svm import SVC, LinearSVC
 
 from puzzle.data_collection.create_sets import RelativePosition
 from puzzle.training_classifiers.extractors.colour_features import ColourFeatureExtractor
+from puzzle.training_classifiers.extractors.gradient_features import GradientFeatureExtractor
 from puzzle.training_classifiers.extractors.l2_features import L2FeatureExtractor
 from puzzle.training_classifiers.extractors.vgg16_features import VGG16FeatureExtractor
 
@@ -209,7 +210,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Features
-    features = [VGG16FeatureExtractor.name(), L2FeatureExtractor.name(), ColourFeatureExtractor.name()]
+    features = [VGG16FeatureExtractor.name(), L2FeatureExtractor.name(), ColourFeatureExtractor.name(),
+                GradientFeatureExtractor.name()]
     if args.features is not None:
         feats_names = [f.strip() for f in args.features.split(',')]
         features = [f for f in feats_names if f in features]
