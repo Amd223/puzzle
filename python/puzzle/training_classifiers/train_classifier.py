@@ -233,9 +233,9 @@ if __name__ == "__main__":
     for f in features:
         for c in images:
             for rel_pos in rel_positions:
-                # train_classifiers(f, c, do_plot=True, display=True)
-
                 print('\nTraining classifier for {}-{}-{}...'.format(f, c, rel_pos))
+                # plot_from_info(rel_pos, f, c, do_plot=True, save_plot_info=True, display=False)
+
                 p = multiprocessing.Process(
                     target=train_classifiers,
                     args=(rel_pos, f, c),
