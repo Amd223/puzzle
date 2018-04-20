@@ -152,11 +152,28 @@ def get_sets(image_class=None, test_set_portion=0.1, seed=42):
     :return: [train_down, train_right, test_down, test_right]
         Four sets of the form (X1s, X2s, Ys)
     """
+    # Generate training / test sets
+    test_images, training_images = get_image_sets(image_class, seed, test_set_portion)
+    
+    args = [
+        (training_images, RelativePosition.DOWN),
+        (training_images, RelativePosition.RIGHT),
+        (test_images,     RelativePosition.DOWN),
+        (test_images,     RelativePosition.RIGHT),
+    ]
+
+    res = []
+    for arg in args:
+        res.append(create_training_set(*arg))
+    return res
+
+
+def get_image_sets(image_class, test_set_portion, seed):
     # Find images of interest
     curr_dir = os.path.dirname(__file__)
     img_dir = os.path.realpath(os.path.join(curr_dir, '../../../images'))
-
     image_pattern = os.path.join(img_dir, '**/*.jpg')
+
     if image_class is not None:
         image_pattern = os.path.join(img_dir, image_class, '*.jpg')
     print('Searching for images at: {}'.format(image_pattern))
@@ -174,18 +191,7 @@ def get_sets(image_class=None, test_set_portion=0.1, seed=42):
         else:
             training_images.append(img)
 
-    # Generate training / test sets
-    args = [
-        (training_images, RelativePosition.DOWN),
-        (training_images, RelativePosition.RIGHT),
-        (test_images,     RelativePosition.DOWN),
-        (test_images,     RelativePosition.RIGHT),
-    ]
-
-    res = []
-    for arg in args:
-        res.append(create_training_set(*arg))
-    return res
+    return test_images, training_images
 
 
 if __name__ == "__main__":

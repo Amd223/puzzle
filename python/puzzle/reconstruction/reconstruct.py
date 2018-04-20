@@ -5,7 +5,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-from puzzle.data_collection.create_sets import get_sets
+from puzzle.data_collection.create_sets import get_image_sets
 from puzzle.training_classifiers.classifier_wrapper import ClassifierWrapper
 from puzzle.training_classifiers.extractors.l2_features import L2FeatureExtractor
 
@@ -110,7 +110,7 @@ def get_coord_for_piece(pieces, piece):
 
 
 def do_reconstruction():
-    _, test_set = get_sets()
+    _, test_set = get_image_sets(image_class='animals')
     image = test_set[0]
     classifier_down, classifier_right = load_classifier_pair('animals', 'L2')
     l2 = L2FeatureExtractor()
