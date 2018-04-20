@@ -14,7 +14,7 @@ class RelativePosition(Enum):
     DOWN  = "down"
 
 
-def crop_one(img, crop_dim, crop_pos=(0, 0)):
+def extract_crop(img, crop_dim, crop_pos=(0, 0)):
     """
     Extracts a crop from a given image
     :param img: str
@@ -47,8 +47,8 @@ def select_correct_crops_right(img, crop_dim=(48, 48)):
     for x in range(0, 528, 48 * 2):
         for y in range(0, 528, 48):
             try:
-                crop_left = crop_one(img, crop_dim, (x, y))
-                crop_right = crop_one(img, crop_dim, (x + crop_dim[0], y))
+                crop_left = extract_crop(img, crop_dim, (x, y))
+                crop_right = extract_crop(img, crop_dim, (x + crop_dim[0], y))
 
                 yield crop_left, crop_right, 0
             except ValueError:
@@ -69,8 +69,8 @@ def select_correct_crops_down(img, crop_dim=(48, 48)):
     for x in range(0, 528, 48):
         for y in range(0, 528, 48 * 2):
             try:
-                crop_up = crop_one(img, crop_dim, (x, y))
-                crop_down = crop_one(img, crop_dim, (x, y + crop_dim[1]))
+                crop_up = extract_crop(img, crop_dim, (x, y))
+                crop_down = extract_crop(img, crop_dim, (x, y + crop_dim[1]))
 
                 yield crop_up, crop_down, 0
             except ValueError:
@@ -90,7 +90,7 @@ def select_incorrect_crops(img, crop_dim=(48, 48)):
         for y in range(0, 528, 48):
             try:
                 # if the crop is not a square, pass and don't put in dataset
-                crop = crop_one(img, crop_dim, (x, y))
+                crop = extract_crop(img, crop_dim, (x, y))
                 crop_dim_x, crop_dim_y = crop_dim[0] * 5, crop_dim[1] * 5
 
                 if (x, y) > (264, 264):
@@ -102,7 +102,7 @@ def select_incorrect_crops(img, crop_dim=(48, 48)):
                 else:
                     new_crop_pos = (x + crop_dim_x, y + crop_dim_y)
 
-                crop2 = crop_one(img, crop_dim, new_crop_pos)
+                crop2 = extract_crop(img, crop_dim, new_crop_pos)
 
                 yield crop, crop2, 1
             except ValueError:
@@ -140,7 +140,7 @@ def create_training_set(images, rel_pos):
     return X1s, X2s, Ys
 
 
-def get_sets(image_class=None, test_set_portion=0.1, seed=None):
+def get_sets(image_class=None, test_set_portion=0.1, seed=42):
     """
     Returns the training & test sets for positions DOWN / RIGHT
     :param image_class: str or None

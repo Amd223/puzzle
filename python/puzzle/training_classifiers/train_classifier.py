@@ -3,18 +3,17 @@ import multiprocessing
 import operator
 import os
 import pickle
-import random
 
 import time
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import roc_curve, auc
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import label_binarize
 from sklearn.svm import SVC, LinearSVC
 
 from puzzle.data_collection.create_sets import RelativePosition
+from puzzle.training_classifiers.classifier_wrapper import ClassifierWrapper
 from puzzle.training_classifiers.extractors.colour_features import ColourFeatureExtractor
 from puzzle.training_classifiers.extractors.gradient_features import GradientFeatureExtractor
 from puzzle.training_classifiers.extractors.l2_features import L2FeatureExtractor
@@ -35,12 +34,6 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
     print('Using training set ' + train_set_path)
     with open(train_set_path, mode="rb") as fp:
         x_train, y_train = pickle.load(fp)
-        # For KNN, use less samples
-        no_samples = min(len(y_train), 100000)
-        ids = list(range(no_samples))
-        random.shuffle(ids)
-        x_train_knn = [x_train[i] for i in ids]
-        y_train_knn = [y_train[i] for i in ids]
 
     print('Using testing set ' + test_set_path)
     with open(test_set_path, mode="rb") as fp:
@@ -56,17 +49,14 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
         MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1),
         RandomForestClassifier(n_jobs=-1)
     ]
+    classifiers = [ClassifierWrapper(clf) for clf in classifiers]
 
     def worker(id, classifier, return_dict):
         """worker function"""
         start = time.time()
-        cls_name = classifier.__class__.__name__
-        if isinstance(classifier, KNeighborsClassifier):
-            xs, ys = x_train_knn, y_train_knn
-        else:
-            xs, ys = x_train, y_train
-        print('Starting {0: <22} on #samples={1: <6} / #features={2: <4}...'.format(cls_name, len(xs), len(xs[0])))
-        classifier.fit(xs, ys)
+        cls_name = classifier.get_name()
+        print('Starting {0: <22} on #features={1: <4}...'.format(cls_name, len(x_train[0])))
+        classifier.fit(x_train, y_train)
         return_dict[id] = (classifier, classifier.score(x_test, y_test))
         print('Finished {0: <22} in {1:.2f}sec'.format(cls_name, time.time() - start))
 
@@ -101,49 +91,18 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
     with open(save_path, mode="wb") as fp:
-        pickle.dump(best_classifier, fp)
+        pickle.dump(best_classifier.classifier, fp)
 
     if not do_plot:
         return
 
     # Plotting...
     y = label_binarize(y_test, classes=[0, 1])
-    it = (c for c in classifiers)
 
-    pred_lregression = next(it).decision_function(x_test)
-    fpr_lregression, tpr_lregression, thresholds = roc_curve(y, pred_lregression)
-    roc_auc_lregression = auc(fpr_lregression, tpr_lregression)
-
-    # pred_svm = next(it).decision_function(x_test)
-    # fpr_svm, tpr_svm, thresholds = roc_curve(y, pred_svm)
-    # roc_auc_svm = auc(fpr_svm, tpr_svm)
-
-    pred_linsvm = next(it).decision_function(x_test)
-    fpr_linsvm, tpr_linsvm, thresholds = roc_curve(y, pred_linsvm)
-    roc_auc_linsvm = auc(fpr_linsvm, tpr_linsvm)
-
-    pred_knn = next(it).predict_proba(x_test)[:, 1]
-    fpr_knn, tpr_knn, thresholds = roc_curve(y, pred_knn)
-    roc_auc_knn = auc(fpr_knn, tpr_knn)
-
-    pred_clf = next(it).predict_proba(x_test)[:, 1]
-    fpr_clf, tpr_clf, thresholds = roc_curve(y, pred_clf)
-    roc_auc_clf = auc(fpr_clf, tpr_clf)
-
-    pred_rfc = next(it).predict_proba(x_test)[:, 1]
-    fpr_rfc, tpr_rfc, thresholds = roc_curve(y, pred_rfc)
-    roc_auc_rfc = auc(fpr_rfc, tpr_rfc)
-    # obtenir les scores
-    # 2 variables en output?
-
-    info = [
-        (fpr_lregression, tpr_lregression, roc_auc_lregression),
-        # (fpr_svm, tpr_svm, roc_auc_svm),
-        (fpr_linsvm, tpr_linsvm, roc_auc_linsvm),
-        (fpr_knn, tpr_knn, roc_auc_knn),
-        (fpr_clf, tpr_clf, roc_auc_clf),
-        (fpr_rfc, tpr_rfc, roc_auc_rfc),
-    ]
+    info = []
+    for clf in classifiers:
+        x, y, auc = clf.get_roc_curve(y, x_test)
+        info.append((x, y, auc))
 
     if save_plot_info:
         # Saving to pickle file...

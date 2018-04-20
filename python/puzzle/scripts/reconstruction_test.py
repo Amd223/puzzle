@@ -54,12 +54,6 @@ def reconstruct(img_path):
     with open("for_ben.pkl", "wb") as fp:
         pickle.dump((probabilities, probabilities2, pieces), fp)
 
-
-
-
-
-
-
     plt.imshow(combined_image)
     plt.show()
 

@@ -73,8 +73,8 @@ if __name__ == "__main__":
     for c in ['animals', 'art', 'cities', 'landscapes', 'portraits', 'space', None]:
         print('\nExtracting {}...'.format(c))
         do_feature_extraction([
-            # VGG16FeatureExtractor(),
-            # L2FeatureExtractor(),
-            # ColourFeatureExtractor(),
+            VGG16FeatureExtractor(),
+            L2FeatureExtractor(),
+            ColourFeatureExtractor(),
             GradientFeatureExtractor()
         ], image_class=c)
