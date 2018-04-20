@@ -20,7 +20,7 @@ def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extract
 
     # Perform reconstruction
     errors = 0
-    reconstructed_puzzle = np.zeros((height, width))
+    reconstructed_puzzle = np.zeros(image.shape)
 
     remaining_pieces = list(pieces.values())
     random.shuffle(remaining_pieces)
