@@ -27,7 +27,7 @@ def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extract
     top_left = remaining_pieces.pop(0)
 
     # Assume we now how to find the top-left corner
-    reconstructed_puzzle[0:piece_height, 0:piece_width] = top_left
+    reconstructed_puzzle[0:piece_height, 0:piece_width, :] = top_left
 
     for y in range(0, height, piece_height):
         for x in range(0, width, piece_width):
@@ -44,7 +44,7 @@ def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extract
                 img_left = reconstructed_puzzle[y:y+piece_height, x-piece_width:x]
                 piece, prob = predict_piece(classifier_right, feature_extractor, img_left, remaining_pieces, is_down=False)
 
-            reconstructed_puzzle[y:y+piece_height,x:x+piece_width] = piece
+            reconstructed_puzzle[y:y+piece_height,x:x+piece_width, :] = piece
 
             # Record errors
             selected_coord = get_coord_for_piece(pieces, piece)
