@@ -40,8 +40,7 @@ class VGG16FeatureExtractor(FeatureExtractor):
         """
         features1 = np.reshape(features1, [-1])
         features2 = np.reshape(features2, [-1])
-        res = np.concatenate((features1, features2))
-        return res
+        return np.concatenate((features1, features2))
 
     def extract(self, img1, img2, is_down=True, **kwargs):
         if is_down:
@@ -49,9 +48,7 @@ class VGG16FeatureExtractor(FeatureExtractor):
         else:
             img = np.concatenate((img1, img2), axis=1)
         feat = self._feature_extraction(img)
-        r = np.reshape(feat, [-1])
-        print(img1.shape, img2.shape, r.shape)
-        return r
+        return np.reshape(feat, [-1])
 
     def extract_feats_from_list(self, list):
         return [np.reshape(self._feature_extraction(file), [1, -1]) for file in list]

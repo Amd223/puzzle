@@ -10,7 +10,7 @@ class L2FeatureExtractor(FeatureExtractor):
 
     def extract(self, img1, img2, **kwargs):
         # d = np.sqrt(np.sum(np.square(img1 - img2), axis=1))[:, None, None]
-        assert img1.shape == img2.shape, "Expect crop shapes to be equal"
+        assert img1.shape == img2.shape, "Expect crop shapes to be equal. Got {}, {}".format(img1.shape, img2.shape)
 
         # Normalise image shapes. Shapes encountered:
         #   - grey scale: (48, 48)
