@@ -22,7 +22,7 @@ def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extract
     errors = 0
     reconstructed_puzzle = np.zeros((height, width))
 
-    remaining_pieces = pieces.copy().values()
+    remaining_pieces = list(pieces.values())
     random.shuffle(remaining_pieces)
     top_left = remaining_pieces.pop(0)
 
@@ -69,6 +69,7 @@ def load_classifier_pair(*args):
 def mk_path(path):
     project_base = os.path.realpath(os.path.join(os.path.dirname(__file__), '../../..'))
     return os.path.join(project_base, path)
+
 
 def load_classifier(class_name, feature, rel_pos):
     file_pattern = mk_path('trained_classifiers/{}-{}-{}-*.pkl'.format(class_name, feature, rel_pos))
