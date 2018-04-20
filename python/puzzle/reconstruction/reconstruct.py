@@ -4,6 +4,7 @@ import pickle
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+from PIL import Image
 
 from puzzle.data_collection.create_sets import get_image_sets
 from puzzle.training_classifiers.classifier_wrapper import ClassifierWrapper
@@ -111,7 +112,8 @@ def get_coord_for_piece(pieces, piece):
 
 def do_reconstruction():
     _, test_set = get_image_sets(image_class='animals')
-    image = test_set[0]
+    image = np.array(Image.open(test_set[0]))
+
     classifier_down, classifier_right = load_classifier_pair('animals', 'L2')
     l2 = L2FeatureExtractor()
     reconstruct_puzzle(image, classifier_down, classifier_right, l2, display=False)
