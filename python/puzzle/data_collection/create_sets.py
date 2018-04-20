@@ -153,8 +153,8 @@ def get_sets(image_class=None, test_set_portion=0.1, seed=42):
         Four sets of the form (X1s, X2s, Ys)
     """
     # Generate training / test sets
-    test_images, training_images = get_image_sets(image_class, seed, test_set_portion)
-    
+    test_images, training_images = get_image_sets(image_class, test_set_portion, seed)
+
     args = [
         (training_images, RelativePosition.DOWN),
         (training_images, RelativePosition.RIGHT),
@@ -168,7 +168,7 @@ def get_sets(image_class=None, test_set_portion=0.1, seed=42):
     return res
 
 
-def get_image_sets(image_class, test_set_portion, seed):
+def get_image_sets(image_class=None, test_set_portion=0.1, seed=42):
     # Find images of interest
     curr_dir = os.path.dirname(__file__)
     img_dir = os.path.realpath(os.path.join(curr_dir, '../../../images'))
