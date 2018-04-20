@@ -10,7 +10,7 @@ from puzzle.training_classifiers.classifier_wrapper import ClassifierWrapper
 from puzzle.training_classifiers.extractors.l2_features import L2FeatureExtractor
 
 
-def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extractor, piece_size=(48, 48)):
+def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extractor, piece_size=(48, 48), display=True):
     piece_height, piece_width = piece_size
     height, width = image.shape[:2]
 
@@ -53,18 +53,24 @@ def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extract
             print('[index=({},{})] selected piece at index ({},{}) with proba {}'.format(y, x, *selected_coord, prob))
 
     plt.imshow(reconstructed_puzzle)
-    plt.show()
+    if display:
+        plt.show()
+    else:
+        plt.savefig(mk_path('reconstructed.png'))
 
-    return errors
+    print('Finished with errors: %d%% (%d/%d)' % (errors / len(pieces) * 100, errors, len(pieces)))
 
 
 def load_classifier_pair(*args):
     return load_classifier(*args, 'down'), load_classifier(*args, 'right')
 
 
-def load_classifier(class_name, feature, rel_pos):
+def mk_path(path):
     project_base = os.path.realpath(os.path.join(os.path.dirname(__file__), '../../..'))
-    file_pattern = os.path.join(project_base, 'trained_classifiers/{}-{}-{}-*.pkl'.format(class_name, feature, rel_pos))
+    return os.path.join(project_base, path)
+
+def load_classifier(class_name, feature, rel_pos):
+    file_pattern = mk_path('trained_classifiers/{}-{}-{}-*.pkl'.format(class_name, feature, rel_pos))
     filename = glob.glob(file_pattern)[0]
 
     with open(filename, mode="rb") as fp:
@@ -108,7 +114,7 @@ def do_reconstruction():
     image = test_set[0]
     classifier_down, classifier_right = load_classifier_pair('animals', 'L2')
     l2 = L2FeatureExtractor()
-    reconstruct_puzzle(image, classifier_down, classifier_right, l2)
+    reconstruct_puzzle(image, classifier_down, classifier_right, l2, display=False)
 
 
 if __name__ == "__main__":
