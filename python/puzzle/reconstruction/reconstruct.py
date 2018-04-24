@@ -19,9 +19,9 @@ def mk_path(path):
     return os.path.join(project_base, path)
 
 
-def load_test_image(image_class, show=False):
+def load_test_image(image_class, show=False, img_nb=0):
     _, test_set = get_image_sets(image_class=image_class)
-    file_path = test_set[2]
+    file_path = test_set[img_nb]
     image = np.array(Image.open(file_path))
 
     if show:
@@ -59,7 +59,7 @@ def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extract
 
     # Perform reconstruction
     errors = 0
-    reconstructed_puzzle = np.zeros(image.shape)
+    reconstructed_puzzle = np.zeros(image.shape, dtype=np.uint8)
 
     remaining_pieces = list(pieces.values())
     top_left = remaining_pieces.pop(0)
@@ -75,14 +75,20 @@ def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extract
                 if x == 0 and y == 0:
                     continue
 
-                if x == 0:
-                    # Use down_classifier to place first of row
-                    imp_up = reconstructed_puzzle[y-piece_height:y, x:x+piece_width]
-                    piece, prob = predict_piece(classifier_down, feature_extractor, imp_up, remaining_pieces, is_down=True)
-                else:
-                    # Use right_classifier to place the rest of row
-                    img_left = reconstructed_puzzle[y:y+piece_height, x-piece_width:x]
-                    piece, prob = predict_piece(classifier_right, feature_extractor, img_left, remaining_pieces, is_down=False)
+                img_up =   reconstructed_puzzle[y - piece_height:y, x:x + piece_width]
+                img_left = reconstructed_puzzle[y:y + piece_height, x - piece_width:x]
+
+                classifying_triple = []
+
+                # If there's a valid image up, use info from classifier_down
+                if img_up.shape[:2] == piece_size:
+                    classifying_triple.append((classifier_down, img_up, True))
+
+                # If there's a valid image left, use info from classifier_right
+                if img_left.shape[:2] == piece_size:
+                    classifying_triple.append((classifier_right, img_left, False))
+
+                piece, prob = predict_piece(classifying_triple, feature_extractor, remaining_pieces)
 
                 remaining_pieces = [p for p in remaining_pieces if not np.array_equal(p, piece)]
                 reconstructed_puzzle[y:y+piece_height, x:x+piece_width, :] = piece
@@ -97,13 +103,22 @@ def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extract
     except Exception as e:
         print('Interrupted with error: {}'.format(e))
 
+    error_rate = int(errors / len(pieces) * 100)
+    print('Finished with errors: {} ({}/{})'.format(error_rate, errors, len(pieces)))
+
+    # Plotting
+    plt.subplot(1, 2, 1)
+    plt.imshow(image)
+    plt.title('Original')
+
+    plt.subplot(1, 2, 2)
     plt.imshow(reconstructed_puzzle)
+    plt.title('Reconstructed - err={}% ({}/{})'.format(error_rate, errors, len(pieces)))
+
     if display:
         plt.show()
     else:
         plt.savefig(mk_path('reconstructed.png'))
-
-    print('Finished with errors: %d%% (%d/%d)' % (errors / len(pieces) * 100, errors, len(pieces)))
 
 
 def break_into_pieces(image, piece_size):
@@ -120,14 +135,22 @@ def break_into_pieces(image, piece_size):
     return pieces
 
 
-def predict_piece(classifier, feature_extractor, img_comp, remaining_pieces, is_down=None):
-    probabilities = np.zeros(len(remaining_pieces))
+def predict_piece(classifying_triple, feature_extractor, remaining_pieces):
+    if len(classifying_triple) == 0:
+        raise RuntimeError('Need at least one classifying_triple')
 
-    for i, piece in enumerate(remaining_pieces):
-        features = feature_extractor.extract(img_comp, piece, is_down=is_down).reshape(1, -1)
-        probabilities[i] = classifier.predict(features)[0]
+    probabilities = np.ones(len(remaining_pieces))
 
-    print('Probabilities: ', probabilities)
+    for clf, img_comp, is_down in classifying_triple:
+
+        clf_probs = np.zeros(len(remaining_pieces))
+        for i, piece in enumerate(remaining_pieces):
+            features = feature_extractor.extract(img_comp, piece, is_down=is_down)
+            clf_probs[i] = clf.get_proba_is_adjacent(features)
+
+        probabilities = np.multiply(probabilities, clf_probs)
+
+    # print('Probabilities: ', probabilities)
     index_best = np.argmax(probabilities)
     return remaining_pieces[index_best], probabilities[index_best]
 
@@ -138,10 +161,10 @@ def get_coord_for_piece(pieces, piece):
             return coordinate
 
 
-def do_reconstruction(image_class, feature):
+def do_reconstruction(image_class, feature, display=True, img_nb=0):
     # Init image for puzzle
-    image = load_test_image(image_class, show=False)
 
+    image = load_test_image(image_class, show=False, img_nb=img_nb)
     # Init feature extractor
     feature_extractors = {
         VGG16FeatureExtractor.name(): VGG16FeatureExtractor,
@@ -155,8 +178,10 @@ def do_reconstruction(image_class, feature):
     classifier_down, classifier_right = load_classifier_pair(image_class, feature)
 
     # Reconstruct
-    reconstruct_puzzle(image, classifier_down, classifier_right, feature_extractor, display=True)
+    image_size = 11  # in the range [1-11]
+    image = image[:48*image_size, :48*image_size, :]
+    reconstruct_puzzle(image, classifier_down, classifier_right, feature_extractor, display=display)
 
 
 if __name__ == "__main__":
-    do_reconstruction('portraits', 'L2')
+    do_reconstruction('portraits', 'vgg16', display=True, img_nb=1)

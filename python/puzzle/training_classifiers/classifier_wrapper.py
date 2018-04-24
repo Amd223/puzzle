@@ -1,5 +1,6 @@
 from random import random
 
+import numpy as np
 from sklearn.metrics import roc_curve, auc
 from sklearn.neighbors import KNeighborsClassifier
 
@@ -33,6 +34,9 @@ class ClassifierWrapper:
             return self.classifier.decision_function(x_test)
         else:
             return self.classifier.predict_proba(x_test)[:, 1]
+
+    def get_proba_is_adjacent(self, features):
+        return self.classifier.predict_proba(features.reshape(1, -1))[0][0]
 
     def get_roc_curve(self, y, x_test):
         pred = self.predict(x_test)
