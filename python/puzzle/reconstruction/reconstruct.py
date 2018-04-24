@@ -1,3 +1,4 @@
+import argparse
 import os
 import glob
 import pickle
@@ -22,6 +23,7 @@ def mk_path(path):
 def load_test_image(image_class, show=False, img_nb=0):
     _, test_set = get_image_sets(image_class=image_class)
     file_path = test_set[img_nb]
+    print('Loading puzzle image ' + file_path)
     image = np.array(Image.open(file_path))
 
     if show:
@@ -42,7 +44,7 @@ def load_classifier(image_class, feature, rel_pos):
     file_pattern = mk_path('trained_classifiers/{}-{}-{}-*.pkl'.format(image_class, feature, rel_pos))
     file_names = glob.glob(file_pattern)
     if len(file_names) != 1:
-        raise RuntimeError('Expected 1, but found #{} classifiers for pattern: {}'.format(len(filenames), file_pattern))
+        raise RuntimeError('Expected 1, but found #{} classifiers for pattern: {}'.format(len(file_names), file_pattern))
     filename = file_names[0]
 
     print('Using classifier {}'.format(os.path.basename(filename)))
@@ -50,7 +52,7 @@ def load_classifier(image_class, feature, rel_pos):
         return ClassifierWrapper(pickle.load(fp))
 
 
-def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extractor, piece_size=(48, 48), display=True):
+def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extractor, save_name, piece_size=(48, 48), display=True):
     piece_height, piece_width = piece_size
     height, width = image.shape[:2]
 
@@ -62,7 +64,13 @@ def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extract
     reconstructed_puzzle = np.zeros(image.shape, dtype=np.uint8)
 
     remaining_pieces = list(pieces.values())
-    top_left = remaining_pieces.pop(0)
+
+    top_left = pieces[(0, 0)]
+    remaining_pieces.remove(top_left)
+    if display:
+        plt.imshow(top_left)
+        plt.show()
+
     random.shuffle(remaining_pieces)
 
     # Assume we now how to find the top-left corner
@@ -118,7 +126,11 @@ def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extract
     if display:
         plt.show()
     else:
-        plt.savefig(mk_path('reconstructed.png'))
+        save_path = mk_path(os.path.join('reconstructed', save_name))
+
+        # Create directory of reconstructed images if it does not exist yet, and save
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        plt.savefig(save_path)
 
 
 def break_into_pieces(image, piece_size):
@@ -161,10 +173,12 @@ def get_coord_for_piece(pieces, piece):
             return coordinate
 
 
-def do_reconstruction(image_class, feature, display=True, img_nb=0):
-    # Init image for puzzle
+def do_reconstruction(image_class_name=None, feature='vgg16', img_nb=0, show_in=False, show_out=True):
+    image_class = None if image_class_name == 'all' else image_class_name
 
-    image = load_test_image(image_class, show=False, img_nb=img_nb)
+    # Init image for puzzle
+    image = load_test_image(image_class, show=show_in, img_nb=img_nb)
+
     # Init feature extractor
     feature_extractors = {
         VGG16FeatureExtractor.name(): VGG16FeatureExtractor,
@@ -175,13 +189,25 @@ def do_reconstruction(image_class, feature, display=True, img_nb=0):
     feature_extractor = feature_extractors[feature]()
 
     # Init classifiers
-    classifier_down, classifier_right = load_classifier_pair(image_class, feature)
+    classifier_down, classifier_right = load_classifier_pair(image_class_name, feature)
 
     # Reconstruct
     image_size = 11  # in the range [1-11]
     image = image[:48*image_size, :48*image_size, :]
-    reconstruct_puzzle(image, classifier_down, classifier_right, feature_extractor, display=display)
+    save_name = 'rec-{}-n{}-{}'.format(image_class_name, img_nb, feature)
+    reconstruct_puzzle(image, classifier_down, classifier_right, feature_extractor, save_name, display=show_out)
 
 
 if __name__ == "__main__":
-    do_reconstruction('portraits', 'vgg16', display=True, img_nb=1)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--image', dest='image_class_name', help='Image class to use. Default is all',
+                        default='all', type=str)
+    parser.add_argument('-f', '--feature', dest='feature', help='Feature type to use. Default is vgg16',
+                        default='vgg16', type=str)
+    parser.add_argument('-n', '--img-nb', dest='img_nb', help='Index of image in test set', default=0, type=int)
+    parser.add_argument('--show-input', dest='show_in', action='store_true', default=False, help='Show input image')
+    parser.add_argument('--show-output', dest='show_out', action='store_true', default=False,
+                        help='Show reconstructed image')
+    args = parser.parse_args()
+
+    do_reconstruction(**vars(args))
