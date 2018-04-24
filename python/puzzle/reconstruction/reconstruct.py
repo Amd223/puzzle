@@ -66,14 +66,13 @@ def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extract
     remaining_pieces = list(pieces.values())
 
     top_left = pieces[(0, 0)]
-    remaining_pieces.remove(top_left)
+    remaining_pieces = [p for p in remaining_pieces if not np.array_equal(p, top_left)]
     if display:
         plt.imshow(top_left)
         plt.show()
 
-    random.shuffle(remaining_pieces)
-
     # Assume we now how to find the top-left corner
+    random.shuffle(remaining_pieces)
     reconstructed_puzzle[0:piece_height, 0:piece_width, :] = top_left
 
     try:
@@ -123,14 +122,13 @@ def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extract
     plt.imshow(reconstructed_puzzle)
     plt.title('Reconstructed - err={}% ({}/{})'.format(error_rate, errors, len(pieces)))
 
+    # Save image
+    save_path = mk_path(os.path.join('reconstructed', save_name))
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
+
     if display:
         plt.show()
-    else:
-        save_path = mk_path(os.path.join('reconstructed', save_name))
-
-        # Create directory of reconstructed images if it does not exist yet, and save
-        os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        plt.savefig(save_path)
 
 
 def break_into_pieces(image, piece_size):
