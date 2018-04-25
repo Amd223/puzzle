@@ -10,14 +10,16 @@ class ClassifierWrapper:
 
     def __init__(self, classifier):
         self.classifier = classifier
+        self.prediction_classifier = None
 
-        # Work-around LinearSVC non-probabilistic nature -
-        # https://stackoverflow.com/questions/47312432
-        if isinstance(classifier, SVC):
-            self.prediction_classifier = SklearnClassifier(classifier)
-        else:
-            self.prediction_classifier = classifier
-
+    def _init_prediction(self):
+        if self.prediction_classifier is None:
+            # Work-around LinearSVC non-probabilistic nature -
+            # https://stackoverflow.com/questions/47312432
+            if isinstance(self.classifier, SVC):
+                self.prediction_classifier = SklearnClassifier(self.classifier)
+            else:
+                self.prediction_classifier = self.classifier
 
     def get_name(self):
         return self.classifier.__class__.__name__
@@ -45,6 +47,7 @@ class ClassifierWrapper:
             return self.classifier.predict_proba(x_test)[:, 1]
 
     def get_proba_is_adjacent(self, features):
+        self._init_prediction()
         return self.prediction_classifier.predict_proba(features.reshape(1, -1))[0][0]
 
     def get_roc_curve(self, y, x_test):
