@@ -11,7 +11,6 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import label_binarize
 from sklearn.svm import SVC
-from nltk.classify.scikitlearn import SklearnClassifier
 
 from puzzle.data_collection.create_sets import RelativePosition
 from puzzle.training_classifiers.classifier_wrapper import ClassifierWrapper

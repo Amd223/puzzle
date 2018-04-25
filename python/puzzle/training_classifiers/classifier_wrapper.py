@@ -1,6 +1,5 @@
-from random import random
+import random
 
-import numpy as np
 from nltk import SklearnClassifier
 from sklearn.metrics import roc_curve, auc
 from sklearn.neighbors import KNeighborsClassifier
