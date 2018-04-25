@@ -1,14 +1,24 @@
 from random import random
 
 import numpy as np
+from nltk import SklearnClassifier
 from sklearn.metrics import roc_curve, auc
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
 
 
 class ClassifierWrapper:
 
     def __init__(self, classifier):
         self.classifier = classifier
+
+        # Work-around LinearSVC non-probabilistic nature -
+        # https://stackoverflow.com/questions/47312432
+        if isinstance(classifier, SVC):
+            self.prediction_classifier = SklearnClassifier(classifier)
+        else:
+            self.prediction_classifier = classifier
+
 
     def get_name(self):
         return self.classifier.__class__.__name__
@@ -36,7 +46,7 @@ class ClassifierWrapper:
             return self.classifier.predict_proba(x_test)[:, 1]
 
     def get_proba_is_adjacent(self, features):
-        return self.classifier.predict_proba(features.reshape(1, -1))[0][0]
+        return self.prediction_classifier.predict_proba(features.reshape(1, -1))[0][0]
 
     def get_roc_curve(self, y, x_test):
         pred = self.predict(x_test)

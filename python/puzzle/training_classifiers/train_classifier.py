@@ -10,7 +10,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import label_binarize
-from sklearn.svm import SVC, LinearSVC
+from sklearn.svm import SVC
+from nltk.classify.scikitlearn import SklearnClassifier
 
 from puzzle.data_collection.create_sets import RelativePosition
 from puzzle.training_classifiers.classifier_wrapper import ClassifierWrapper
@@ -41,10 +42,11 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
 
     # Training classifiers
     classifiers = [
-        # 'sag' solver for large datasets -- http://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+        # 'sag' solver for large data sets -
+        # http://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
         LogisticRegression(solver='sag', n_jobs=-1),
-        #SVC(),
-        LinearSVC(),
+        # LinearSVM - see ClassifierWrapper constructor for further details
+        SVC(kernel='linear', probability=True),
         KNeighborsClassifier(n_jobs=-1),
         MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1),
         RandomForestClassifier(n_jobs=-1)
@@ -136,7 +138,6 @@ def plot_classifier_roc(info, display, graph_path):
 
     [
         (fpr_lregression, tpr_lregression, roc_auc_lregression),
-        # (fpr_svm, tpr_svm, roc_auc_svm),
         (fpr_linsvm, tpr_linsvm, roc_auc_linsvm),
         (fpr_knn, tpr_knn, roc_auc_knn),
         (fpr_clf, tpr_clf, roc_auc_clf),
@@ -145,7 +146,6 @@ def plot_classifier_roc(info, display, graph_path):
 
     plt.figure()
     plt.plot(fpr_lregression, tpr_lregression, color='cornflowerblue', label='ROC curve lregression (area = %0.2f)' % roc_auc_lregression)
-    # plt.plot(fpr_svm, tpr_svm, color='darkorange', label='ROC curve SVM (area = %0.2f)' % roc_auc_svm)
     plt.plot(fpr_linsvm, tpr_linsvm, color='green', label='ROC curve LINSVM (area = %0.2f)' % roc_auc_linsvm)
     plt.plot(fpr_knn, tpr_knn, color='aqua', label='ROC curve KNN (area = %0.2f)' % roc_auc_knn)
     plt.plot(fpr_clf, tpr_clf, color='black', label='ROC curve clf (area = %0.2f)' % roc_auc_clf)

@@ -13,4 +13,5 @@ tensorflow-for-poets-2
 flickr_images
 extracted_features
 trained_classifiers
+reconstructed
 *.pkl
