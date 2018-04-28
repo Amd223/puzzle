@@ -188,8 +188,9 @@ def get_coord_for_piece(pieces, piece):
             return coordinate
 
 
-def do_reconstruction(image_class_name=None, feature='vgg16', img_idx=0, show_in=False, show_out=True):
+def do_reconstruction(image_class_name=None, feature='vgg16', img_idx=0, img_size=11, show_in=False, show_out=True):
     image_class = None if image_class_name == 'all' else image_class_name
+    assert 1 <= img_size <= 11, 'Image side size must be in the range 1-11'
 
     # Init image for puzzle
     image = load_test_image(image_class, show=show_in, img_nb=img_idx)
@@ -207,9 +208,8 @@ def do_reconstruction(image_class_name=None, feature='vgg16', img_idx=0, show_in
     classifier_down, classifier_right = load_classifier_pair(image_class_name, feature)
 
     # Reconstruct
-    image_size = 6  # in the range [1-11]
-    image = image[:48*image_size, :48*image_size, :]
-    save_name = 'rec-{}-n{}-{}pcs-{}'.format(image_class_name, img_idx, image_size**2, feature)
+    image = image[:48*img_size, :48*img_size, :]
+    save_name = 'rec-{}-n{}-{}pcs-{}'.format(image_class_name, img_idx, img_size**2, feature)
     reconstruct_puzzle(image, classifier_down, classifier_right, feature_extractor, save_name, display=show_out)
 
 
@@ -220,6 +220,8 @@ if __name__ == "__main__":
     parser.add_argument('-f', dest='feature', help='feature type to use. Default is vgg16.',
                         default='vgg16', type=str)
     parser.add_argument('-n', dest='img_idx', help='index of image in test set. Default is 0.', default=0, type=int)
+    parser.add_argument('-s', dest='img_size', help='number of pieces per side - range 1-11. Default is 11.',
+                        default=11, type=int)
     parser.add_argument('--show-input', dest='show_in', action='store_true', default=False,
                         help='show input image. Default is False.')
     parser.add_argument('--show-output', dest='show_out', action='store_true', default=False,
