@@ -18,7 +18,7 @@ class GradientFeatureExtractor(FeatureExtractor):
         hist2 = self._compute_hist_of_gradients(img2)
         return np.square(hist1 - hist2)
 
-    def _compute_hist_of_gradients(img):
+    def _compute_hist_of_gradients(self, img):
         gx = cv2.Sobel(img, cv2.CV_32F, 1, 0)
         gy = cv2.Sobel(img, cv2.CV_32F, 0, 1)
         mag, ang = cv2.cartToPolar(gx, gy)
