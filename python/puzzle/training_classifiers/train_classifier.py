@@ -76,14 +76,14 @@ def train_classifiers(rel_pos, feature, image_class=None, do_plot=True, save_plo
 
     # Saving to pickle file...
     best_classifier, best_score = max(scores.values(), key=operator.itemgetter(1))
-    best_classifier_name = best_classifier.__class__.__name__
+    best_classifier_name = best_classifier.get_name()
 
     save_path = mkd('trained_classifiers/{}-{}-{}-' + best_classifier_name + '.pkl')
 
     # Displaying results
     s = '\nClassifier results {}-{}-{}'.format(class_name, feature, rel_pos)
     for c, score in scores.values():
-        s += '\n   >>> {} : {}'.format(c.__class__.__name__, score)
+        s += '\n   >>> {} : {}'.format(c.get_name(), score)
     s += '\nBest classifier: {} => {}'.format(best_classifier_name, best_score)
     s += '\nSaving at "{}"'.format(save_path)
     print(s)

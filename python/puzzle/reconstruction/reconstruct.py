@@ -61,15 +61,13 @@ def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extract
 
     # Perform reconstruction
     errors = 0
+    rel_errors = 0
     reconstructed_puzzle = np.zeros(image.shape, dtype=np.uint8)
 
     remaining_pieces = list(pieces.values())
 
     top_left = pieces[(0, 0)]
     remaining_pieces = [p for p in remaining_pieces if not np.array_equal(p, top_left)]
-    if display:
-        plt.imshow(top_left)
-        plt.show()
 
     # Assume we now how to find the top-left corner
     random.shuffle(remaining_pieces)
@@ -101,17 +99,34 @@ def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extract
                 reconstructed_puzzle[y:y+piece_height, x:x+piece_width, :] = piece
 
                 # Record errors
-                selected_coord = get_coord_for_piece(pieces, piece)
-                if selected_coord != (y, x):
+                selected_y, selected_x = get_coord_for_piece(pieces, piece)
+                if (selected_y, selected_x) != (y, x):
                     errors += 1
 
-                print('[index=({},{})] selected piece at index ({},{}) with proba {}'.format(y, x, *selected_coord, prob))
+                # Relative accuracy
+                if x == 0:
+                    # Left-most column - compare with piece above
+                    if get_coord_for_piece(pieces, img_up) != (selected_y - piece_height, selected_x):
+                        rel_errors += 1
+                else:
+                    # In-row - compare with piece to the left
+                    if get_coord_for_piece(pieces, img_left) != (selected_y, selected_x - piece_width):
+                        rel_errors += 1
+
+                print('[index=({},{})] selected piece at index ({},{}) with proba {}'.format(y, x, selected_y, selected_x, prob))
 
     except Exception as e:
         print('Interrupted with error: {}'.format(e))
 
-    error_rate = int(errors / len(pieces) * 100)
-    print('Finished with errors: {} ({}/{})'.format(error_rate, errors, len(pieces)))
+    correct_pieces = len(pieces) - errors
+    accuracy = int(correct_pieces / len(pieces) * 100)
+    accuracy = '{}% ({}/{})'.format(accuracy, correct_pieces, len(pieces))
+
+    correct_pieces = len(pieces) - rel_errors
+    rel_accuracy = int(correct_pieces / len(pieces) * 100)
+    rel_accuracy = '{}% ({}/{})'.format(rel_accuracy, correct_pieces, len(pieces))
+
+    print('Finished with accuracy={}, rel_accuracy={}'.format(accuracy, rel_accuracy))
 
     # Plotting
     plt.subplot(1, 2, 1)
@@ -120,7 +135,9 @@ def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extract
 
     plt.subplot(1, 2, 2)
     plt.imshow(reconstructed_puzzle)
-    plt.title('Reconstructed - err={}% ({}/{})'.format(error_rate, errors, len(pieces)))
+    plt.title(r"""Reconstructed 
+    accuracy={}
+    rel_accuracy={}""".format(accuracy, rel_accuracy))
 
     # Save image
     save_path = mk_path(os.path.join('reconstructed', save_name))
@@ -171,11 +188,11 @@ def get_coord_for_piece(pieces, piece):
             return coordinate
 
 
-def do_reconstruction(image_class_name=None, feature='vgg16', img_nb=0, show_in=False, show_out=True):
+def do_reconstruction(image_class_name=None, feature='vgg16', img_idx=0, show_in=False, show_out=True):
     image_class = None if image_class_name == 'all' else image_class_name
 
     # Init image for puzzle
-    image = load_test_image(image_class, show=show_in, img_nb=img_nb)
+    image = load_test_image(image_class, show=show_in, img_nb=img_idx)
 
     # Init feature extractor
     feature_extractors = {
@@ -190,22 +207,23 @@ def do_reconstruction(image_class_name=None, feature='vgg16', img_nb=0, show_in=
     classifier_down, classifier_right = load_classifier_pair(image_class_name, feature)
 
     # Reconstruct
-    image_size = 11  # in the range [1-11]
+    image_size = 6  # in the range [1-11]
     image = image[:48*image_size, :48*image_size, :]
-    save_name = 'rec-{}-n{}-{}'.format(image_class_name, img_nb, feature)
+    save_name = 'rec-{}-n{}-{}pcs-{}'.format(image_class_name, img_idx, image_size**2, feature)
     reconstruct_puzzle(image, classifier_down, classifier_right, feature_extractor, save_name, display=show_out)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--image', dest='image_class_name', help='Image class to use. Default is all',
+    parser.add_argument('-i', dest='image_class_name', help='name of image class to use. Default is all.',
                         default='all', type=str)
-    parser.add_argument('-f', '--feature', dest='feature', help='Feature type to use. Default is vgg16',
+    parser.add_argument('-f', dest='feature', help='feature type to use. Default is vgg16.',
                         default='vgg16', type=str)
-    parser.add_argument('-n', '--img-nb', dest='img_nb', help='Index of image in test set', default=0, type=int)
-    parser.add_argument('--show-input', dest='show_in', action='store_true', default=False, help='Show input image')
+    parser.add_argument('-n', dest='img_idx', help='index of image in test set. Default is 0.', default=0, type=int)
+    parser.add_argument('--show-input', dest='show_in', action='store_true', default=False,
+                        help='show input image. Default is False.')
     parser.add_argument('--show-output', dest='show_out', action='store_true', default=False,
-                        help='Show reconstructed image')
+                        help='show reconstructed image. Default is False.')
     args = parser.parse_args()
 
     do_reconstruction(**vars(args))
