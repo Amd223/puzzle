@@ -55,8 +55,6 @@ def select_correct_crops_right(img, crop_dim=(48, 48)):
                 pass
 
 
-# TODO: perhaps merge the 2 functions together?
-
 def select_correct_crops_down(img, crop_dim=(48, 48)):
     """
       Extracts a set of correctly positioned crops down from a given image

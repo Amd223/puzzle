@@ -1,5 +1,5 @@
 # IntelliJ
-.idea/*
+.idea
 
 # Python / virtual env
 venv
@@ -7,10 +7,7 @@ env
 .python-version
 __pycache__
 
-# Temp files directory
-w
-tensorflow-for-poets-2
-flickr_images
+# Temp files
 extracted_features
 trained_classifiers
 reconstructed
