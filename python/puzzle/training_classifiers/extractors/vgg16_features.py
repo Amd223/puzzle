@@ -9,8 +9,6 @@ from puzzle.training_classifiers.extractors.feature_extractor import FeatureExtr
 class VGG16FeatureExtractor(FeatureExtractor):
     def __init__(self):
         self.model = VGG16(weights='imagenet', include_top=False)
-        # layer_name="block2_pool"
-        # self.model = Model(inputs=vgg_model.input, outputs=vgg_model.get_layer(layer_name).output)
 
     @staticmethod
     def name():
@@ -22,7 +20,6 @@ class VGG16FeatureExtractor(FeatureExtractor):
         :param img:
         :return:
         """
-        # img = image.load_img(img_path, target_size=(48, 48))
         x = image.img_to_array(img)
         x = np.expand_dims(x, axis=0)
         x = preprocess_input(x)

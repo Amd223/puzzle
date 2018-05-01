@@ -192,7 +192,6 @@ if __name__ == "__main__":
         for c in images:
             for rel_pos in rel_positions:
                 print('\nTraining classifier for {}-{}-{}...'.format(f, c, rel_pos))
-                # plot_from_info(rel_pos, f, c, do_plot=True, save_plot_info=True, display=False)
 
                 p = multiprocessing.Process(
                     target=train_classifiers,
