@@ -52,7 +52,8 @@ def load_classifier(image_class, feature, rel_pos):
         return ClassifierWrapper(pickle.load(fp))
 
 
-def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extractor, save_name, piece_size=(48, 48), display=True):
+def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extractor, save_name, piece_size=(48, 48),
+                       display=True, interactive=False):
     piece_height, piece_width = piece_size
     height, width = image.shape[:2]
 
@@ -112,6 +113,12 @@ def reconstruct_puzzle(image, classifier_down, classifier_right, feature_extract
                     # In-row - compare with piece to the left
                     if get_coord_for_piece(pieces, img_left) != (selected_y, selected_x - piece_width):
                         rel_errors += 1
+
+                # Display
+                if interactive:
+                    plt.clf()
+                    plt.imshow(reconstructed_puzzle)
+                    plt.pause(.001)
 
                 print('[index=({},{})] selected piece at index ({},{}) with proba {}'.format(y, x, selected_y, selected_x, prob))
 
@@ -188,7 +195,8 @@ def get_coord_for_piece(pieces, piece):
             return coordinate
 
 
-def do_reconstruction(image_class_name=None, feature='vgg16', img_idx=0, img_size=11, show_in=False, show_out=True):
+def do_reconstruction(image_class_name=None, feature='vgg16', img_idx=0, img_size=11, show_in=False, show_out=True,
+                      interactive=False):
     image_class = None if image_class_name == 'all' else image_class_name
     assert 1 <= img_size <= 11, 'Image side size must be in the range 1-11'
 
@@ -210,7 +218,8 @@ def do_reconstruction(image_class_name=None, feature='vgg16', img_idx=0, img_siz
     # Reconstruct
     image = image[:48*img_size, :48*img_size, :]
     save_name = 'rec-{}-n{}-{}pcs-{}'.format(image_class_name, img_idx, img_size**2, feature)
-    reconstruct_puzzle(image, classifier_down, classifier_right, feature_extractor, save_name, display=show_out)
+    reconstruct_puzzle(image, classifier_down, classifier_right, feature_extractor, save_name, display=show_out,
+                       interactive=interactive)
 
 
 if __name__ == "__main__":
@@ -226,6 +235,8 @@ if __name__ == "__main__":
                         help='show input image. Default is False.')
     parser.add_argument('--show-output', dest='show_out', action='store_true', default=False,
                         help='show reconstructed image. Default is False.')
+    parser.add_argument('--interactive', dest='interactive', action='store_true', default=False,
+                        help='Show the reconstruction interactively. Default is False.')
     args = parser.parse_args()
 
     do_reconstruction(**vars(args))
